@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>{{ recipe.name }}</h1>
+<p><strong>Kategorie:</strong> {{ recipe.category }}</p>
+<p><strong>Vorbereitungszeit:</strong> {{ recipe.preparation_time }} Minuten</p>
+<p><strong>Koch-/Backzeit:</strong> {{ recipe.cooking_time }} Minuten</p>
+<p><strong>Notizen:</strong> {{ recipe.notes }}</p>
+
+<h2>Zutaten für 1 Portion</h2>
+
+<div class="mb-3">
+    <label for="portions">Portionen anpassen:</label>
+    <input type="number" id="portions" value="1" min="1" class="form-control" style="width:100px;display:inline-block;">
+</div>
+
+<table class="table table-bordered" id="ingredients-table">
+    <thead>
+        <tr>
+            <th>Menge</th>
+            <th>Einheit</th>
+            <th>Zutat</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for ingr in ingredients %}
+        <tr>
+            <td class="quantity-cell">{{ ingr.quantity }}</td>
+            <td>{{ ingr.unit }}</td>
+            <td>{{ ingr.ingredient_name }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h2>Zubereitung</h2>
+<p>{{ recipe.instructions }}</p>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Dynamische Portionsanpassung
+    $('#portions').on('input', function() {
+        let factor = parseFloat($(this).val());
+        if (isNaN(factor) || factor <= 0) factor = 1;
+
+        $('#ingredients-table .quantity-cell').each(function() {
+            let baseQuantity = parseFloat($(this).attr('data-base') || $(this).text());
+            if (!$(this).attr('data-base')) {
+                // Beim ersten Mal speichern wir den Originalwert
+                $(this).attr('data-base', baseQuantity);
+            }
+            let newVal = baseQuantity * factor;
+            $(this).text(newVal.toLocaleString('de-DE', {maximumFractionDigits:2}));
+        });
+    });
+</script>
+{% endblock %}
+

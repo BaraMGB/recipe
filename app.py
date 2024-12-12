@@ -35,8 +35,10 @@ def new_recipe():
         # Daten aus dem Formular holen
         name = request.form.get('name')
         category = request.form.get('category')
+        menu_description = request.form.get('menu_description')
         preparation_time = request.form.get('preparation_time')
         cooking_time = request.form.get('cooking_time')
+        allergens = request.form.get('allergens')
         instructions = request.form.get('instructions')
         notes = request.form.get('notes')
 
@@ -46,8 +48,8 @@ def new_recipe():
         
         conn = get_db_connection()
         # Neues Rezept einfügen
-        conn.execute('INSERT INTO recipes (name, category, preparation_time, cooking_time, instructions, notes) VALUES (?,?,?,?,?,?)',
-                     (name, category, preparation_time, cooking_time, instructions, notes))
+        conn.execute('INSERT INTO recipes (name, category, menu_description, preparation_time, cooking_time, allergens, instructions, notes) VALUES (?,?,?,?,?,?,?,?)',
+                     (name, category, menu_description, preparation_time, cooking_time, allergens, instructions, notes))
         recipe_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
 
         # Jetzt die Zutaten einfügen
@@ -76,6 +78,9 @@ def new_recipe():
     # GET-Anfrage: Formular anzeigen
     return render_template('new_recipe.html')
 
+
+
+
 @app.route('/edit_recipe/<int:recipe_id>', methods=['GET', 'POST'])
 def edit_recipe(recipe_id):
     conn = get_db_connection()
@@ -91,14 +96,16 @@ def edit_recipe(recipe_id):
         # Rezept-Daten aktualisieren
         name = request.form.get('name')
         category = request.form.get('category')
+        menu_description = request.form.get('menu_description')
         preparation_time = request.form.get('preparation_time')
         cooking_time = request.form.get('cooking_time')
+        allergens = request.form.get('allergens')
         instructions = request.form.get('instructions')
         notes = request.form.get('notes')
 
         conn = get_db_connection()
-        conn.execute('UPDATE recipes SET name = ?, category = ?, preparation_time = ?, cooking_time = ?, instructions = ?, notes = ? WHERE id = ?',
-                     (name, category, preparation_time, cooking_time, instructions, notes, recipe_id))
+        conn.execute('UPDATE recipes SET name = ?, category = ?, menu_description = ?, preparation_time = ?, cooking_time = ?, allergens = ?, instructions = ?, notes = ? WHERE id = ?',
+                     (name, category, menu_description, preparation_time, cooking_time, allergens, instructions, notes, recipe_id))
 
         # Zutaten aktualisieren oder löschen
         # Hier wird es etwas komplexer, da wir hinzugefügte, gelöschte und bearbeitete Zutaten berücksichtigen müssen.

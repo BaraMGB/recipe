@@ -12,8 +12,22 @@
 
 
 <p><strong>Kategorie:</strong> {{ recipe.category }}</p>
+<p><strong>Speisekarten Beschreibung:</strong>
+{% if recipe.menu_description %}
+    {{ recipe.menu_description }}
+{% else %}
+     -
+{% endif %}
+</p>
 <p><strong>Vorbereitungszeit:</strong> {{ recipe.preparation_time }} Minuten</p>
 <p><strong>Koch-/Backzeit:</strong> {{ recipe.cooking_time }} Minuten</p>
+<p>
+    {% if recipe.allergens %}
+        <strong>Allergene:</strong> {{ recipe.allergens }}
+    {% else %}
+        <strong>Allergene:</strong> Keine Angabe
+    {% endif %}
+</p>
 <p><strong>Notizen:</strong> {{ recipe.notes }}</p>
 
 <h2>Zutaten</h2>

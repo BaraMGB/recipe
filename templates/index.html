@@ -14,7 +14,10 @@
         <tr>
             <td>{{ recipe.name }}</td>
             <td>{{ recipe.category }}</td>
-            <td><a href="{{ url_for('show_recipe', recipe_id=recipe.id) }}" class="btn btn-sm btn-info">Ansehen</a></td>
+            <td>
+                <a href="{{ url_for('show_recipe', recipe_id=recipe.id) }}" class="btn btn-sm btn-info">Ansehen</a>
+                <a href="{{ url_for('edit_recipe', recipe_id=recipe.id) }}" class="btn btn-sm btn-warning">Bearbeiten</a>
+            </td>
         </tr>
     {% endfor %}
     </tbody>

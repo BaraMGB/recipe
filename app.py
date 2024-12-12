@@ -25,7 +25,7 @@ def show_recipe(recipe_id):
         conn.close()
         return "Rezept nicht gefunden", 404
 
-    ingredients = conn.execute('SELECT * FROM ingredients WHERE recipe_id = ?', (recipe_id,)).fetchall()
+    ingredients = conn.execute('SELECT * FROM ingredients WHERE recipe_id = ? ORDER BY display_order', (recipe_id,)).fetchall()
     conn.close()
     return render_template('recipe_detail.html', recipe=recipe, ingredients=ingredients)
 
@@ -60,10 +60,13 @@ def new_recipe():
             unit = request.form.get(f'unit_{idx}')
             quantity = request.form.get(f'quantity_{idx}')
 
+            # Setze die display_order basierend auf dem Index
+            display_order = ingredient_names.index(ingredient_key) + 1
+
             # Nur einfügen, wenn tatsächlich ein Name und Menge angegeben wurde
             if ingredient_name and quantity:
-                conn.execute('INSERT INTO ingredients (recipe_id, quantity, unit, ingredient_name) VALUES (?,?,?,?)',
-                             (recipe_id, quantity, unit, ingredient_name))
+                conn.execute('INSERT INTO ingredients (recipe_id, quantity, unit, ingredient_name, display_order) VALUES (?,?,?,?,?)',
+                             (recipe_id, quantity, unit, ingredient_name, display_order))
 
         conn.commit()
         conn.close()
@@ -73,3 +76,78 @@ def new_recipe():
     # GET-Anfrage: Formular anzeigen
     return render_template('new_recipe.html')
 
+@app.route('/edit_recipe/<int:recipe_id>', methods=['GET', 'POST'])
+def edit_recipe(recipe_id):
+    conn = get_db_connection()
+    recipe = conn.execute('SELECT * FROM recipes WHERE id = ?', (recipe_id,)).fetchone()
+    if recipe is None:
+        conn.close()
+        return "Rezept nicht gefunden", 404
+
+    ingredients = conn.execute('SELECT * FROM ingredients WHERE recipe_id = ? ORDER BY display_order', (recipe_id,)).fetchall()
+    conn.close()
+
+    if request.method == 'POST':
+        # Rezept-Daten aktualisieren
+        name = request.form.get('name')
+        category = request.form.get('category')
+        preparation_time = request.form.get('preparation_time')
+        cooking_time = request.form.get('cooking_time')
+        instructions = request.form.get('instructions')
+        notes = request.form.get('notes')
+
+        conn = get_db_connection()
+        conn.execute('UPDATE recipes SET name = ?, category = ?, preparation_time = ?, cooking_time = ?, instructions = ?, notes = ? WHERE id = ?',
+                     (name, category, preparation_time, cooking_time, instructions, notes, recipe_id))
+
+        # Zutaten aktualisieren oder löschen
+        # Hier wird es etwas komplexer, da wir hinzugefügte, gelöschte und bearbeitete Zutaten berücksichtigen müssen.
+        # Zunächst holen wir die IDs der vorhandenen Zutaten aus der Datenbank.
+        existing_ingredient_ids = [ingr['id'] for ingr in ingredients]
+
+        # Dann iterieren wir über die submitted ingredient IDs im Formular
+        submitted_ingredient_ids = []
+        for key in request.form.keys():
+            if key.startswith('ingredient_id_'):
+                value = request.form.get(key)
+                if value:  # Überprüfe, ob der Wert nicht leer ist
+                    submitted_ingredient_ids.append(int(value))
+
+        # Zutaten löschen, die nicht mehr im Formular sind
+        for ingr_id in existing_ingredient_ids:
+            if ingr_id not in submitted_ingredient_ids:
+                conn.execute('DELETE FROM ingredients WHERE id = ?', (ingr_id,))
+        
+        # Zutaten aktualisieren oder neu hinzufügen
+        ingredient_names = [key for key in request.form.keys() if key.startswith('ingredient_name_')]
+        for ingredient_index, ingredient_key in enumerate(ingredient_names):
+            # Index extrahieren, falls vorhanden
+            if '_' in ingredient_key:
+                idx = ingredient_key.split('_')[-1]
+            else:
+                idx = None
+
+            ingredient_id = request.form.get(f'ingredient_id_{idx}')
+            ingredient_name = request.form.get(f'ingredient_name_{idx}')
+            unit = request.form.get(f'unit_{idx}')
+            quantity = request.form.get(f'quantity_{idx}')
+
+            # Setze die display_order basierend auf dem aktuellen Index
+            display_order = ingredient_index + 1
+
+            if ingredient_name and quantity:
+                if ingredient_id and int(ingredient_id) in existing_ingredient_ids:
+                    # Zutat aktualisieren
+                    conn.execute('UPDATE ingredients SET quantity = ?, unit = ?, ingredient_name = ?, display_order = ? WHERE id = ?',
+                                 (quantity, unit, ingredient_name, display_order, ingredient_id))
+                else:
+                    # Neue Zutat hinzufügen
+                    conn.execute('INSERT INTO ingredients (recipe_id, quantity, unit, ingredient_name, display_order) VALUES (?,?,?,?,?)',
+                                 (recipe_id, quantity, unit, ingredient_name, display_order))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for('show_recipe', recipe_id=recipe_id))
+
+    return render_template('edit_recipe.html', recipe=recipe, ingredients=ingredients)

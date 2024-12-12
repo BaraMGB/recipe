@@ -1,9 +1,6 @@
 {% extends "layout.html" %}
-
-{% set count = 1 %}
-
 {% block content %}
-<h1>{{ recipe.name }} bearbeiten</h1>
+<h1>Rezept bearbeiten: {{ recipe.name }}</h1>
 <form method="post">
     <div class="mb-3">
         <label for="name" class="form-label">Name des Gerichts</label>
@@ -30,57 +27,47 @@
         <textarea name="notes" id="notes" class="form-control" rows="3">{{ recipe.notes }}</textarea>
     </div>
 
-    <h2>Zutaten (für 1 Portion)</h2>
+    <h2>Zutaten</h2>
+          
     <div id="ingredients-wrapper">
-        {% if ingredients|length > 0 %}
-            {% for ingr in ingredients %}
-            <div class="row g-2 ingredient-set mt-2">
-                <div class="col">
-                    <input type="number" step="0.01" name="quantity_{{ count }}" value="{{ ingr.quantity }}" placeholder="Menge" class="form-control">
+        {% for ingr in ingredients %}
+            <div class="row g-2 ingredient-set">
+                <input type="hidden" name="ingredient_id_{{ loop.index }}" value="{{ ingr.id }}">
+                <div class="col-auto handle" style="cursor: move;">
+                    <i class="bi bi-grip-vertical"></i>
                 </div>
                 <div class="col">
-                    <input type="text" name="unit_{{ count }}" value="{{ ingr.unit }}" placeholder="Einheit (g, ml...)" class="form-control">
+                    <input type="number" step="0.01" name="quantity_{{ loop.index }}" placeholder="Menge" class="form-control" value="{{ ingr.quantity }}">
                 </div>
                 <div class="col">
-                    <input type="text" name="ingredient_name_{{ count }}" value="{{ ingr.ingredient_name }}" placeholder="Zutat" class="form-control">
-                </div>
-            </div>
-            {% set count = count + 1 %}
-            {% endfor %}
-        {% else %}
-            <div class="row g-2 ingredient-set mt-2">
-                <div class="col">
-                    <input type="number" step="0.01" name="quantity_{{ count }}" placeholder="Menge" class="form-control">
+                    <input type="text" name="unit_{{ loop.index }}" placeholder="Einheit (g, ml...)" class="form-control" value="{{ ingr.unit }}">
                 </div>
                 <div class="col">
-                    <input type="text" name="unit_{{ count }}" placeholder="Einheit (g, ml...)" class="form-control">
+                    <input type="text" name="ingredient_name_{{ loop.index }}" placeholder="Zutat" class="form-control" value="{{ ingr.ingredient_name }}">
                 </div>
-                <div class="col">
-                    <input type="text" name="ingredient_name_{{ count }}" placeholder="Zutat" class="form-control">
+                <div class="col-auto">
+                    <button type="button" class="btn btn-danger btn-sm remove-ingredient">X</button>
                 </div>
             </div>
-            {% set count = count + 1 %}
-        {% endif %}
+        {% endfor %}
     </div>
-
-    <!-- Verstecktes Feld zur Verfolgung der Anzahl der Zutaten -->
-    <input type="hidden" id="ingredient_count" name="ingredient_count" value="{{ count - 1 if count > 1 else 1 }}">
 
     <button type="button" class="btn btn-secondary mt-3" id="add-ingredient-btn">Weitere Zutat hinzufügen</button>
 
     <div class="mt-4">
-        <button type="submit" class="btn btn-success">Änderungen speichern</button>
+        <button type="submit" class="btn btn-success">Speichern</button>
     </div>
 </form>
 {% endblock %}
 
 {% block scripts %}
 <script>
-let ingredientCount = {{ count - 1 if count > 1 else 1 }};
+let ingredientCount = {{ ingredients|length }};
 $('#add-ingredient-btn').click(function() {
     ingredientCount++;
     let html = `
     <div class="row g-2 ingredient-set mt-2">
+        <input type="hidden" name="ingredient_id_${ingredientCount}" value="">
         <div class="col">
             <input type="number" step="0.01" name="quantity_${ingredientCount}" placeholder="Menge" class="form-control">
         </div>
@@ -90,10 +77,45 @@ $('#add-ingredient-btn').click(function() {
         <div class="col">
             <input type="text" name="ingredient_name_${ingredientCount}" placeholder="Zutat" class="form-control">
         </div>
-    </div>`;
+        <div class="col-auto">
+            <button type="button" class="btn btn-danger btn-sm remove-ingredient">X</button>
+        </div>
+    </div>
+    `;
     $('#ingredients-wrapper').append(html);
-    $('#ingredient_count').val(ingredientCount);
+});
+
+// Event-Delegation für das Entfernen von Zutaten
+$('#ingredients-wrapper').on('click', '.remove-ingredient', function() {
+    $(this).closest('.ingredient-set').remove();
+});
+
+// Zutaten verschiebbar machen
+$("#ingredients-wrapper").sortable({
+    handle: ".handle", // Nur über das Handle-Element verschiebbar
+    update: function (event, ui) {
+        // Durchnummerierung der Input-Felder aktualisieren
+        $('.ingredient-set').each(function (index) {
+            const newIndex = index + 1;
+            $(this).find('input').each(function () {
+                const oldName = $(this).attr('name');
+                if (oldName) {
+                    // Überprüfe, ob der alte Name mit "ingredient_id_" beginnt
+                    if (oldName.startsWith("ingredient_id_")) {
+                        // Setze den Wert nur, wenn es sich um eine vorhandene Zutat handelt
+                        const existingIngredientId = $(this).val();
+                        if (existingIngredientId) {
+                            const newName = oldName.replace(/_\d+/, `_${newIndex}`);
+                            $(this).attr('name', newName);
+                        }
+                    } else {
+                        const newName = oldName.replace(/_\d+/, `_${newIndex}`);
+                        $(this).attr('name', newName);
+                    }
+                }
+            });
+        });
+    }
 });
 </script>
 {% endblock %}
-

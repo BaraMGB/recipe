@@ -11,7 +11,13 @@
     </div>
 </div>
 
-    
+<div class="row">
+    {% for photo in photos %}
+    <div class="col-md-4">
+        <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" class="img-fluid" alt="Foto zum Rezept">
+    </div>
+    {% endfor %}
+</div>  
 
 
 <p><strong>Kategorie:</strong> {{ recipe.category }}</p>

@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS ingredients;
 DROP TABLE IF EXISTS recipes;
+DROP TABLE IF EXISTS photos;
 
 CREATE TABLE recipes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,5 +21,12 @@ CREATE TABLE ingredients (
     unit TEXT,
     ingredient_name TEXT,
     display_order INTEGER,
+    FOREIGN KEY(recipe_id) REFERENCES recipes(id)
+);
+
+CREATE TABLE photos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_id INTEGER,
+    filename TEXT NOT NULL,
     FOREIGN KEY(recipe_id) REFERENCES recipes(id)
 );

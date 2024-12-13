@@ -158,3 +158,11 @@ def edit_recipe(recipe_id):
         return redirect(url_for('show_recipe', recipe_id=recipe_id))
 
     return render_template('edit_recipe.html', recipe=recipe, ingredients=ingredients)
+@app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
+def delete_recipe(recipe_id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM ingredients WHERE recipe_id = ?', (recipe_id,))
+    conn.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index'))

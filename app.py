@@ -29,8 +29,17 @@ def uploaded_file(filename):
 def index():
     conn = get_db_connection()
     recipes = conn.execute('SELECT id, name, category FROM recipes').fetchall()
+    photos_query = conn.execute('SELECT recipe_id, filename FROM photos').fetchall()
     conn.close()
-    return render_template('index.html', recipes=recipes)
+
+    # Fotos nach Rezept gruppieren
+    photos = {}
+    for photo in photos_query:
+        if photo['recipe_id'] not in photos:
+            photos[photo['recipe_id']] = []
+        photos[photo['recipe_id']].append(photo)
+
+    return render_template('index.html', recipes=recipes, photos=photos)
 
 @app.route('/recipe/<int:recipe_id>')
 def show_recipe(recipe_id):
@@ -41,7 +50,8 @@ def show_recipe(recipe_id):
         return "Rezept nicht gefunden", 404
 
     ingredients = conn.execute('SELECT * FROM ingredients WHERE recipe_id = ?', (recipe_id,)).fetchall()
-    photos = conn.execute('SELECT * FROM photos WHERE recipe_id = ?', (recipe_id,)).fetchall()
+    photos = conn.execute('SELECT id, filename FROM photos WHERE recipe_id = ?', (recipe_id,)).fetchall()
+
     conn.close()
     return render_template('recipe_detail.html', recipe=recipe, ingredients=ingredients, photos=photos)
 
@@ -49,6 +59,7 @@ def show_recipe(recipe_id):
 def new_recipe():
     if request.method == 'POST':
         name = request.form.get('name')
+        menu_description = request.form.get('menu_description')
         category = request.form.get('category')
         preparation_time = request.form.get('preparation_time')
         cooking_time = request.form.get('cooking_time')
@@ -56,8 +67,8 @@ def new_recipe():
         notes = request.form.get('notes')
 
         conn = get_db_connection()
-        cursor = conn.execute('INSERT INTO recipes (name, category, preparation_time, cooking_time, instructions, notes) VALUES (?,?,?,?,?,?)',
-                     (name, category, preparation_time, cooking_time, instructions, notes))
+        cursor = conn.execute('INSERT INTO recipes (name, menu_description, category, preparation_time, cooking_time, instructions, notes) VALUES (?,?,?,?,?,?)',
+                     (name, menu_description, category, preparation_time, cooking_time, instructions, notes))
         recipe_id = cursor.lastrowid
 
         ingredient_names = [key for key in request.form.keys() if key.startswith('ingredient_name_')]
@@ -92,6 +103,7 @@ def new_recipe():
 def edit_recipe(recipe_id):
     if request.method == 'POST':
         name = request.form.get('name')
+        menu_description = request.form.get('menu_description')
         category = request.form.get('category')
         preparation_time = request.form.get('preparation_time')
         cooking_time = request.form.get('cooking_time')
@@ -113,8 +125,8 @@ def edit_recipe(recipe_id):
                     })
 
         with get_db_connection() as conn:
-            conn.execute('UPDATE recipes SET name = ?, category = ?, preparation_time = ?, cooking_time = ?, instructions = ?, notes = ? WHERE id = ?',
-                         (name, category, preparation_time, cooking_time, instructions, notes, recipe_id))
+            conn.execute('UPDATE recipes SET name = ?, menu_description = ?,  category = ?, preparation_time = ?, cooking_time = ?, instructions = ?, notes = ? WHERE id = ?',
+                         (name, menu_description, category, preparation_time, cooking_time, instructions, notes, recipe_id))
 
             conn.execute('DELETE FROM ingredients WHERE recipe_id = ?', (recipe_id,))
             for ingredient in ingredients_data:
@@ -131,6 +143,17 @@ def edit_recipe(recipe_id):
                         file.save(filepath)
                         conn.execute('INSERT INTO photos (recipe_id, filename) VALUES (?, ?)', (recipe_id, filename))
 
+            # Fotos zum Löschen prüfen
+            delete_photo_ids = [key.split('_')[-1] for key in request.form.keys() if key.startswith('delete_photo_')]
+            for photo_id in delete_photo_ids:
+                if request.form.get(f'delete_photo_{photo_id}') == '1':  # Nur markierte Fotos löschen
+                    photo = conn.execute('SELECT filename FROM photos WHERE id = ?', (photo_id,)).fetchone()
+                    if photo:
+                        filepath = os.path.join(app.config['UPLOAD_FOLDER'], photo['filename'])
+                        if os.path.exists(filepath):
+                            os.remove(filepath)
+                        conn.execute('DELETE FROM photos WHERE id = ?', (photo_id,))
+
             conn.commit()
 
         return redirect(url_for('show_recipe', recipe_id=recipe_id))
@@ -138,7 +161,8 @@ def edit_recipe(recipe_id):
     conn = get_db_connection()
     recipe = conn.execute('SELECT * FROM recipes WHERE id = ?', (recipe_id,)).fetchone()
     ingredients = conn.execute('SELECT * FROM ingredients WHERE recipe_id = ?', (recipe_id,)).fetchall()
-    photos = conn.execute('SELECT * FROM photos WHERE recipe_id = ?', (recipe_id,)).fetchall()
+    photos = conn.execute('SELECT id, filename FROM photos WHERE recipe_id = ?', (recipe_id,)).fetchall()
+
     conn.close()
 
     if recipe is None:
@@ -161,6 +185,18 @@ def delete_recipe(recipe_id):
         conn.commit()
 
     return redirect(url_for('index'))
+
+@app.route('/delete_photo/<int:photo_id>', methods=['POST'])
+def delete_photo(photo_id):
+    with get_db_connection() as conn:
+        photo = conn.execute('SELECT filename FROM photos WHERE id = ?', (photo_id,)).fetchone()
+        if photo:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], photo['filename'])
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            conn.execute('DELETE FROM photos WHERE id = ?', (photo_id,))
+            conn.commit()
+    return redirect(request.referrer)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

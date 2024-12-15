@@ -8,9 +8,10 @@
     </div>
     <div class="row">
         {% for photo in photos %}
-        <div class="col-md-4">
-            <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" class="img-fluid" alt="Foto zum Rezept">
-            <!-- Hier könntest du einen Lösch-Button für jedes Foto einfügen -->
+        <div id="photo-{{ photo.id }}" class="col-md-4">
+            <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" class="img-fluid mb-2" alt="Foto zum Rezept">
+            <button type="button" class="btn btn-danger btn-sm delete-photo-btn" data-photo-id="{{ photo.id }}">Foto löschen</button>
+            <input type="hidden" name="delete_photo_{{ photo.id }}" value="0" id="delete-photo-input-{{ photo.id }}">
         </div>
         {% endfor %}
     </div>
@@ -81,6 +82,15 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+$(document).on('click', '.delete-photo-btn', function() {
+    const photoId = $(this).data('photo-id');
+    // Versteckten Input-Wert auf 1 setzen (markieren)
+    $(`#delete-photo-input-${photoId}`).val(1);
+    // Foto-Container visuell entfernen
+    $(`#photo-${photoId}`).hide();
+});
+</script>
 <script>
 let ingredientCount = {{ ingredients|length }};
 $('#add-ingredient-btn').click(function() {

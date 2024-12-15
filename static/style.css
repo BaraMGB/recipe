@@ -1,0 +1,192 @@
+/* Grundlegende Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e9ecef; /* Heller Grauton als Hintergrund */
+    color: #343a40; /* Dunkler Text für besseren Kontrast */
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1, h2, h3 {
+    color: #343a40; /* Dunkelgrau für Überschriften */
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+
+/* Buttons */
+.btn {
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: black;
+    border: none;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+/* Formulare */
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+/* Rezept-Details */
+/* Hauptcontainer für das Rezept */
+.recipe-detail-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Rezepttitel */
+.recipe-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.recipe-detail .row img { /* Hier die row Klasse hinzufügen */
+    max-width: 100%; /* Maximale Breite ist jetzt relativ zur Spaltenbreite */
+    height: auto;
+    margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+/* Flexbox für Rezept-Details */
+.recipe-detail .content {
+    display: flex;
+    gap: 20px;
+}
+
+/* Media Query für kleinere Bildschirme */
+@media (max-width: 768px) {
+    .recipe-detail .content {
+        flex-direction: column;
+    }
+
+    .recipe-detail img {
+        max-width: 100%; /* Bilder nehmen die volle Breite ein */
+    }
+}
+
+.recipe-card {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+    padding: 15px; /* Innenabstand */
+    border-radius: 5px; /* Abgerundete Ecken */
+    margin-bottom: 20px; /* Abstand nach unten */
+    background-color: white; /* Hintergrundfarbe Weiß */
+}
+/* Galerie-Bilder gleichmäßig skalieren */
+.carousel-img {
+    height: 400px; /* Einheitliche Höhe für alle Bilder */
+    object-fit: cover; /* Bilder werden proportional zugeschnitten */
+    width: 100%; /* Breite auf Container begrenzen */
+}
+
+/* Verhindern, dass der Content springt */
+/* Galerie */
+.carousel {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.carousel-img {
+    height: 400px;
+    object-fit: cover;
+}
+.card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    color: #6c757d;
+    margin-bottom: 15px;
+}
+
+.card .btn {
+    margin-right: 5px;
+}
+.card-img-top {
+    height: 150px; /* Höhe anpassen */
+    object-fit: cover; /* Bild proportioniert zuschneiden */
+    border-top-left-radius: 8px; /* Abrundungen wie die Karte */
+    border-top-right-radius: 8px;
+}
+/* Rezeptdetails */
+.recipe-info p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+/* Tabelle für Zutaten */
+.table {
+    margin-top: 15px;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #dee2e6;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+

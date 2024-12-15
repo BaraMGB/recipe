@@ -1,1 +1,3 @@
 __pycache__
+upload/*
+./database.db

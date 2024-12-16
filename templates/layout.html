@@ -10,9 +10,25 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="p-3">
-    <nav class="mb-4">
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">Startseite</a>
-        <a href="{{ url_for('new_recipe') }}" class="btn btn-primary">Neues Rezept</a>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <div class="container-fluid">
+            <a href="{{ url_for('index') }}" class="navbar-brand">Rezept-App</a>
+            <div>
+                {% if current_user.role in ["Admin", "Editor"] %}
+                <a href="{{ url_for('new_recipe') }}" class="btn btn-primary me-2">Neues Rezept</a>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if current_user.is_authenticated %}
+                    <span class="me-3">Angemeldet als: <strong>{{ current_user.username }}</strong></span>
+                    <form action="{{ url_for('logout') }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm">Login</a>
+                {% endif %}
+            </div>
+        </div>
     </nav>
     {% block content %}{% endblock %}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -20,12 +36,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     {% block scripts %}
-        <script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('search-input');
             const clearButton = document.getElementById('clear-search');
 
-            // Zeige den Löschen-Button, wenn Text im Suchfeld ist
             function toggleClearButton() {
                 if (searchInput.value.trim() !== '') {
                     clearButton.style.display = 'block';
@@ -34,20 +49,17 @@
                 }
             }
 
-            // Überwache Änderungen im Eingabefeld
             searchInput.addEventListener('input', toggleClearButton);
 
-            // Beim Klicken auf den Löschen-Button
             clearButton.addEventListener('click', function() {
                 searchInput.value = '';
-                toggleClearButton(); // Button ausblenden
-                window.location.href = window.location.pathname; // Seite neu laden ohne Suchparameter
+                toggleClearButton();
+                window.location.href = window.location.pathname;
             });
 
-            // Initial prüfen, ob das Feld bereits Text enthält (z. B. bei Seiten-Reload mit vorherigem Wert)
             toggleClearButton();
         });
-        </script>
+    </script>
     {% endblock %}
 </body>
 </html>

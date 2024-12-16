@@ -1,17 +1,37 @@
 {% extends "layout.html" %}
 {% block content %}
 <h1>Alle Rezepte</h1>
+<div class="mb-4">
+    <form method="get" action="{{ url_for('index') }}">
+        <div class="input-group">
+            <input 
+                type="text" 
+                name="search" 
+                id="search-input" 
+                class="form-control" 
+                placeholder="Suche nach Name oder Kategorie..." 
+                value="{{ request.args.get('search', '') }}">
+            <button 
+                type="button" 
+                id="clear-search" 
+                class="btn btn-outline-secondary" 
+                style="display: none;">&times;</button>
+            <button 
+                type="submit" 
+                class="btn btn-primary">Suchen</button>
+        </div>
+    </form>
+</div>
+
+{% if recipes %}
 <div class="row">
     {% for recipe in recipes %}
     <div class="col-md-4">
         <div class="card mb-4">
-            <!-- Bild des Rezepts -->
             {% set first_photo = photos.get(recipe.id, [None])[0] %}
             {% if first_photo %}
             <img src="{{ url_for('uploaded_file', filename=first_photo.filename) }}" class="card-img-top" alt="{{ recipe.name }}">
             {% endif %}
-            
-            <!-- Rezeptdetails -->
             <div class="card-body">
                 <h5 class="card-title">{{ recipe.name }}</h5>
                 <p class="card-text">{{ recipe.category }}</p>
@@ -25,5 +45,9 @@
     </div>
     {% endfor %}
 </div>
+{% else %}
+<p class="text-muted">Keine Rezepte gefunden.</p>
+{% endif %}
+
 {% endblock %}
 

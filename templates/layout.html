@@ -19,7 +19,36 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
-    {% block scripts %}{% endblock %}
+    {% block scripts %}
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const clearButton = document.getElementById('clear-search');
+
+            // Zeige den Löschen-Button, wenn Text im Suchfeld ist
+            function toggleClearButton() {
+                if (searchInput.value.trim() !== '') {
+                    clearButton.style.display = 'block';
+                } else {
+                    clearButton.style.display = 'none';
+                }
+            }
+
+            // Überwache Änderungen im Eingabefeld
+            searchInput.addEventListener('input', toggleClearButton);
+
+            // Beim Klicken auf den Löschen-Button
+            clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                toggleClearButton(); // Button ausblenden
+                window.location.href = window.location.pathname; // Seite neu laden ohne Suchparameter
+            });
+
+            // Initial prüfen, ob das Feld bereits Text enthält (z. B. bei Seiten-Reload mit vorherigem Wert)
+            toggleClearButton();
+        });
+        </script>
+    {% endblock %}
 </body>
 </html>
 

@@ -89,6 +89,8 @@ $('#add-ingredient-btn').click(function() {
     </div>
     `;
     $('#ingredients-wrapper').append(html);
+    // Fokus auf das neue "Menge"-Feld setzen
+    $(`input[name="quantity_${ingredientCount}"]`).focus();
 });
 </script>
 {% endblock %}

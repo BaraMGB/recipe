@@ -41,7 +41,7 @@
     </div>
     <div class="mb-3">
         <label for="instructions" class="form-label">Zubereitungsschritte</label>
-        <textarea name="instructions" id="instructions" class="form-control" rows="5">{{ recipe.instructions }}</textarea>
+        <textarea name="instructions" id="instructions" class="form-control" rows="8">{{ recipe.instructions }}</textarea>
     </div>
     <div class="mb-3">
         <label for="notes" class="form-label">Notizen/Anrichtehinweise</label>
@@ -82,6 +82,18 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.tiny.cloud/1/nyep5z4q4jgfa8os3gvgf9jyuwfzfgmboga4cr3q7qpqoyx3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    tinymce.init({
+        selector: '#instructions',  // ID des Textfelds
+        menubar: false,             // Menüleiste ausblenden
+        plugins: 'lists link',      // Plugins für Listen und Links
+        toolbar: 'bold italic | bullist numlist | link',  // Editor-Toolbar
+        branding: false,            // Branding-Info ausblenden
+        height: 300                 // Höhe des Editors
+    });
+</script>
+
 <script>
 $(document).on('click', '.delete-photo-btn', function() {
     const photoId = $(this).data('photo-id');
@@ -113,6 +125,9 @@ $('#add-ingredient-btn').click(function() {
     </div>
     `;
     $('#ingredients-wrapper').append(html);
+
+    // Fokus auf das neue "Menge"-Feld setzen
+    $(`input[name="quantity_${ingredientCount}"]`).focus();
 });
 
 // Event-Delegation für das Entfernen von Zutaten

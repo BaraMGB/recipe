@@ -189,4 +189,10 @@ a:hover {
     background-color: #f8f9fa;
     font-weight: bold;
 }
-
+.input-group .form-control {
+    height: 38px; /* Einheitliche Höhe für das Suchfeld */
+}
+.input-group .btn {
+    height: 38px; /* Passt die Höhe an das Input-Feld an */
+    line-height: 1.2; /* Zentriert den Text vertikal */
+}

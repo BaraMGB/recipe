@@ -25,21 +25,52 @@ def allowed_file(filename):
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+
 @app.route('/')
 def index():
+    search_query = request.args.get('search', '').strip()  # Suchbegriff aus der URL abrufen
     conn = get_db_connection()
-    recipes = conn.execute('SELECT id, name, category FROM recipes').fetchall()
-    photos_query = conn.execute('SELECT recipe_id, filename FROM photos').fetchall()
+
+    # SQL-Basisabfrage
+    base_query = 'SELECT id, name, category FROM recipes'
+    photos_query = 'SELECT recipe_id, filename FROM photos'
+    params = []
+
+    # Filter hinzufügen, falls Suchbegriff vorhanden
+    if search_query:
+        base_query += ' WHERE name LIKE ? OR category LIKE ?'
+        params.extend([f'%{search_query}%', f'%{search_query}%'])
+
+    recipes = conn.execute(base_query, params).fetchall()
+    photos_result = conn.execute(photos_query).fetchall()
     conn.close()
 
     # Fotos nach Rezept gruppieren
     photos = {}
-    for photo in photos_query:
+    for photo in photos_result:
         if photo['recipe_id'] not in photos:
             photos[photo['recipe_id']] = []
         photos[photo['recipe_id']].append(photo)
 
-    return render_template('index.html', recipes=recipes, photos=photos)
+    return render_template('index.html', recipes=recipes, photos=photos, search=search_query)
+
+
+
+# @app.route('/')
+# def index():
+#     conn = get_db_connection()
+#     recipes = conn.execute('SELECT id, name, category FROM recipes').fetchall()
+#     photos_query = conn.execute('SELECT recipe_id, filename FROM photos').fetchall()
+#     conn.close()
+#
+#     # Fotos nach Rezept gruppieren
+#     photos = {}
+#     for photo in photos_query:
+#         if photo['recipe_id'] not in photos:
+#             photos[photo['recipe_id']] = []
+#         photos[photo['recipe_id']].append(photo)
+#
+#     return render_template('index.html', recipes=recipes, photos=photos)
 
 @app.route('/recipe/<int:recipe_id>')
 def show_recipe(recipe_id):
@@ -63,12 +94,13 @@ def new_recipe():
         category = request.form.get('category')
         preparation_time = request.form.get('preparation_time')
         cooking_time = request.form.get('cooking_time')
+        allergens = request.form.get('allergens')
         instructions = request.form.get('instructions')
         notes = request.form.get('notes')
 
         conn = get_db_connection()
-        cursor = conn.execute('INSERT INTO recipes (name, menu_description, category, preparation_time, cooking_time, instructions, notes) VALUES (?,?,?,?,?,?)',
-                     (name, menu_description, category, preparation_time, cooking_time, instructions, notes))
+        cursor = conn.execute('INSERT INTO recipes (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes) VALUES (?,?,?,?,?,?)',
+                     (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes))
         recipe_id = cursor.lastrowid
 
         ingredient_names = [key for key in request.form.keys() if key.startswith('ingredient_name_')]
@@ -107,6 +139,7 @@ def edit_recipe(recipe_id):
         category = request.form.get('category')
         preparation_time = request.form.get('preparation_time')
         cooking_time = request.form.get('cooking_time')
+        allergens = request.form.get('allergens')
         instructions = request.form.get('instructions')
         notes = request.form.get('notes')
 
@@ -125,8 +158,8 @@ def edit_recipe(recipe_id):
                     })
 
         with get_db_connection() as conn:
-            conn.execute('UPDATE recipes SET name = ?, menu_description = ?,  category = ?, preparation_time = ?, cooking_time = ?, instructions = ?, notes = ? WHERE id = ?',
-                         (name, menu_description, category, preparation_time, cooking_time, instructions, notes, recipe_id))
+            conn.execute('UPDATE recipes SET name = ?, menu_description = ?,  category = ?, preparation_time = ?, cooking_time = ?, allergens = ?, instructions = ?, notes = ? WHERE id = ?',
+                         (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes, recipe_id))
 
             conn.execute('DELETE FROM ingredients WHERE recipe_id = ?', (recipe_id,))
             for ingredient in ingredients_data:

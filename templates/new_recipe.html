@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <h1>Neues Rezept anlegen</h1>
-<form method="post" enctype="multipart/form-data">
+<form id="new-recipe-form" method="post" enctype="multipart/form-data">
     <div class="mb-3">
         <label for="name" class="form-label">Name des Gerichts</label>
         <input type="text" name="name" id="name" class="form-control" required>
@@ -40,7 +40,8 @@
     </div>
     <div class="mb-3">
         <label for="instructions" class="form-label">Zubereitungsschritte</label>
-        <textarea name="instructions" id="instructions" class="form-control" rows="5"></textarea>
+        <input type="hidden" name="instructions" id="hidden-instructions">
+        <div id="editor-container" style="height: 300px;"></div>
     </div>
     <div class="mb-3">
         <label for="notes" class="form-label">Notizen/Anrichtehinweise</label>
@@ -72,6 +73,46 @@
 
 {% block scripts %}
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("JavaScript läuft!");
+
+    // Quill-Editor initialisieren
+    var quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: 'Zubereitung eingeben...',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['link']
+            ]
+        }
+    });
+    console.log("Quill geladen!");
+
+    // Formular für "Neues Rezept anlegen" auswählen
+    var form = document.querySelector('#new-recipe-form');
+    if (form) {
+        console.log("Formular gefunden:", form);
+
+        form.addEventListener('submit', function (event) {
+            // Debugging: Submit verhindern, bis Quill übertragen ist
+            event.preventDefault();
+            console.log("Submit wurde ausgelöst!");
+
+            // Quill-Inhalt in das versteckte Feld übertragen
+            var instructionsField = document.querySelector('#hidden-instructions');
+            instructionsField.value = quill.root.innerHTML;
+
+            console.log("Übertragener Quill-Inhalt:", instructionsField.value);
+
+            // Formular absenden
+            form.submit();
+        });
+    } else {
+        console.error("Formular wurde nicht gefunden!");
+    }
+});
 let ingredientCount = 1;
 $('#add-ingredient-btn').click(function() {
     ingredientCount++;

@@ -1,7 +1,7 @@
 /* Grundlegende Styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: #e9ecef; /* Heller Grauton als Hintergrund */
+    background-color: #a9acaf; /* Heller Grauton als Hintergrund */
     color: #343a40; /* Dunkler Text für besseren Kontrast */
     margin: 0;
     padding: 0;
@@ -140,7 +140,7 @@ a:hover {
     object-fit: cover;
 }
 .card {
-    border: 1px solid #dee2e6;
+    border: 1px solid #0e0206;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     background-color: white;
@@ -196,3 +196,5 @@ a:hover {
     height: 38px; /* Passt die Höhe an das Input-Feld an */
     line-height: 1.2; /* Zentriert den Text vertikal */
 }
+
+

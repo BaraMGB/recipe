@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <h1>Rezept bearbeiten: {{ recipe.name }}</h1>
-<form method="post" enctype="multipart/form-data">
+<form id="edit-recipe-form" method="post" enctype="multipart/form-data">
     <div class="mb-3">
         <label for="name" class="form-label">Name des Gerichts</label>
         <input type="text" name="name" id="name" class="form-control" value="{{ recipe.name }}" required>
@@ -39,9 +39,11 @@
         <label for="allergens" class="form-label">Allergene</label>
         <input type="text" name="allergens" id="allergens" class="form-control" value="{{ recipe.allergens }}" placeholder="z.B. Gluten, Laktose, Nüsse">
     </div>
-    <div class="mb-3">
+     <!-- Zubereitung -->
+    <div class="mb-3 mt-4">
         <label for="instructions" class="form-label">Zubereitungsschritte</label>
-        <textarea name="instructions" id="instructions" class="form-control" rows="8">{{ recipe.instructions }}</textarea>
+        <input type="hidden" name="instructions" id="hidden-instructions">
+        <div id="editor-container" style="height: 300px;">{{ recipe.instructions|safe }}</div>
     </div>
     <div class="mb-3">
         <label for="notes" class="form-label">Notizen/Anrichtehinweise</label>
@@ -82,85 +84,100 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.tiny.cloud/1/nyep5z4q4jgfa8os3gvgf9jyuwfzfgmboga4cr3q7qpqoyx3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-    tinymce.init({
-        selector: '#instructions',  // ID des Textfelds
-        menubar: false,             // Menüleiste ausblenden
-        plugins: 'lists link',      // Plugins für Listen und Links
-        toolbar: 'bold italic | bullist numlist | link',  // Editor-Toolbar
-        branding: false,            // Branding-Info ausblenden
-        height: 300                 // Höhe des Editors
+    document.addEventListener('DOMContentLoaded', function () {
+    console.log("JavaScript läuft!");
+
+    var quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: 'Zubereitung eingeben...',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['link']
+            ]
+        }
     });
-</script>
 
-<script>
-$(document).on('click', '.delete-photo-btn', function() {
-    const photoId = $(this).data('photo-id');
-    // Versteckten Input-Wert auf 1 setzen (markieren)
-    $(`#delete-photo-input-${photoId}`).val(1);
-    // Foto-Container visuell entfernen
-    $(`#photo-${photoId}`).hide();
-});
-</script>
-<script>
-let ingredientCount = {{ ingredients|length }};
-$('#add-ingredient-btn').click(function() {
-    ingredientCount++;
-    let html = `
-    <div class="row g-2 ingredient-set mt-2">
-        <input type="hidden" name="ingredient_id_${ingredientCount}" value="">
-        <div class="col">
-            <input type="number" step="0.01" name="quantity_${ingredientCount}" placeholder="Menge" class="form-control">
-        </div>
-        <div class="col">
-            <input type="text" name="unit_${ingredientCount}" placeholder="Einheit (g, ml...)" class="form-control">
-        </div>
-        <div class="col">
-            <input type="text" name="ingredient_name_${ingredientCount}" placeholder="Zutat" class="form-control">
-        </div>
-        <div class="col-auto">
-            <button type="button" class="btn btn-danger btn-sm remove-ingredient">X</button>
-        </div>
-    </div>
-    `;
-    $('#ingredients-wrapper').append(html);
+    var form = document.querySelector('#edit-recipe-form'); // Korrektes Formular auswählen
+    if (form) {
+        console.log("Edit-Rezept-Formular gefunden:", form);
 
-    // Fokus auf das neue "Menge"-Feld setzen
-    $(`input[name="quantity_${ingredientCount}"]`).focus();
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // Neuladen der Seite verhindern (Debugging)
+            console.log("Submit wurde ausgelöst!");
+
+            var instructionsField = document.querySelector('#hidden-instructions');
+            instructionsField.value = quill.root.innerHTML;
+
+            console.log("Übertragener Quill-Inhalt:", instructionsField.value);
+
+            form.submit();
+        });
+    } else {
+        console.error("Edit-Rezept-Formular wurde nicht gefunden!");
+    }
 });
 
-// Event-Delegation für das Entfernen von Zutaten
-$('#ingredients-wrapper').on('click', '.remove-ingredient', function() {
-    $(this).closest('.ingredient-set').remove();
-});
 
-// Zutaten verschiebbar machen
-$("#ingredients-wrapper").sortable({
-    handle: ".handle", // Nur über das Handle-Element verschiebbar
-    update: function (event, ui) {
-        // Durchnummerierung der Input-Felder aktualisieren
-        $('.ingredient-set').each(function (index) {
-            const newIndex = index + 1;
-            $(this).find('input').each(function () {
-                const oldName = $(this).attr('name');
-                if (oldName) {
-                    // Überprüfe, ob der alte Name mit "ingredient_id_" beginnt
-                    if (oldName.startsWith("ingredient_id_")) {
-                        // Setze den Wert nur, wenn es sich um eine vorhandene Zutat handelt
-                        const existingIngredientId = $(this).val();
-                        if (existingIngredientId) {
+    let ingredientCount = {{ ingredients|length }};
+    $('#add-ingredient-btn').click(function() {
+        ingredientCount++;
+        let html = `
+        <div class="row g-2 ingredient-set mt-2">
+            <input type="hidden" name="ingredient_id_${ingredientCount}" value="">
+            <div class="col">
+                <input type="number" step="0.01" name="quantity_${ingredientCount}" placeholder="Menge" class="form-control">
+            </div>
+            <div class="col">
+                <input type="text" name="unit_${ingredientCount}" placeholder="Einheit (g, ml...)" class="form-control">
+            </div>
+            <div class="col">
+                <input type="text" name="ingredient_name_${ingredientCount}" placeholder="Zutat" class="form-control">
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-danger btn-sm remove-ingredient">X</button>
+            </div>
+        </div>
+        `;
+        $('#ingredients-wrapper').append(html);
+
+        // Fokus auf das neue "Menge"-Feld setzen
+        $(`input[name="quantity_${ingredientCount}"]`).focus();
+    });
+
+    // Event-Delegation für das Entfernen von Zutaten
+    $('#ingredients-wrapper').on('click', '.remove-ingredient', function() {
+        $(this).closest('.ingredient-set').remove();
+    });
+
+    // Zutaten verschiebbar machen
+    $("#ingredients-wrapper").sortable({
+        handle: ".handle", // Nur über das Handle-Element verschiebbar
+        update: function (event, ui) {
+            // Durchnummerierung der Input-Felder aktualisieren
+            $('.ingredient-set').each(function (index) {
+                const newIndex = index + 1;
+                $(this).find('input').each(function () {
+                    const oldName = $(this).attr('name');
+                    if (oldName) {
+                        // Überprüfe, ob der alte Name mit "ingredient_id_" beginnt
+                        if (oldName.startsWith("ingredient_id_")) {
+                            // Setze den Wert nur, wenn es sich um eine vorhandene Zutat handelt
+                            const existingIngredientId = $(this).val();
+                            if (existingIngredientId) {
+                                const newName = oldName.replace(/_\d+/, `_${newIndex}`);
+                                $(this).attr('name', newName);
+                            }
+                        } else {
                             const newName = oldName.replace(/_\d+/, `_${newIndex}`);
                             $(this).attr('name', newName);
                         }
-                    } else {
-                        const newName = oldName.replace(/_\d+/, `_${newIndex}`);
-                        $(this).attr('name', newName);
                     }
-                }
+                });
             });
-        });
-    }
-});
+        }
+    });
 </script>
 {% endblock %}

@@ -155,7 +155,7 @@ def new_recipe():
         notes = request.form.get('notes')
 
         conn = get_db_connection()
-        cursor = conn.execute('INSERT INTO recipes (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes) VALUES (?,?,?,?,?,?)',
+        cursor = conn.execute('INSERT INTO recipes (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes) VALUES (?,?,?,?,?,?,?,?)',
                      (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes))
         recipe_id = cursor.lastrowid
 

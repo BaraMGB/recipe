@@ -10,6 +10,8 @@ app = Flask(__name__)
 
 # Konfiguration für Uploads
 UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
@@ -21,6 +23,7 @@ load_dotenv()
 
 # Beispiel: Passwort aus .env
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "default_password")
+print("ADMIN_PASSWORD:", os.getenv("ADMIN_PASSWORD"))
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -75,9 +78,10 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+DATABASE_PATH = os.path.join('/data', 'database.db')
 
 def get_db_connection():
-    conn = sqlite3.connect('database.db', timeout=10, check_same_thread=False)
+    conn = sqlite3.connect(DATABASE_PATH, timeout=10, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 

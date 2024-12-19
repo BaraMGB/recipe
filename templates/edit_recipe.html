@@ -86,40 +86,55 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-    console.log("JavaScript läuft!");
+        console.log("JavaScript läuft!");
 
-    var quill = new Quill('#editor-container', {
-        theme: 'snow',
-        placeholder: 'Zubereitung eingeben...',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline'],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                ['link']
-            ]
+        var quill = new Quill('#editor-container', {
+            theme: 'snow',
+            placeholder: 'Zubereitung eingeben...',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['link']
+                ]
+            }
+        });
+
+        var form = document.querySelector('#edit-recipe-form'); // Korrektes Formular auswählen
+        if (form) {
+            console.log("Edit-Rezept-Formular gefunden:", form);
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault(); // Neuladen der Seite verhindern (Debugging)
+                console.log("Submit wurde ausgelöst!");
+
+                var instructionsField = document.querySelector('#hidden-instructions');
+                instructionsField.value = quill.root.innerHTML;
+
+                console.log("Übertragener Quill-Inhalt:", instructionsField.value);
+
+                form.submit();
+            });
+        } else {
+            console.error("Edit-Rezept-Formular wurde nicht gefunden!");
         }
     });
+    // Lösch-Buttons für Fotos
+    document.querySelectorAll('.delete-photo-btn').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const photoId = this.getAttribute('data-photo-id');
+            const photoInput = document.querySelector(`#delete-photo-input-${photoId}`);
+            const photoContainer = document.querySelector(`#photo-${photoId}`);
 
-    var form = document.querySelector('#edit-recipe-form'); // Korrektes Formular auswählen
-    if (form) {
-        console.log("Edit-Rezept-Formular gefunden:", form);
+            // Markiere das Foto zum Löschen
+            photoInput.value = "1";
 
-        form.addEventListener('submit', function (event) {
-            event.preventDefault(); // Neuladen der Seite verhindern (Debugging)
-            console.log("Submit wurde ausgelöst!");
-
-            var instructionsField = document.querySelector('#hidden-instructions');
-            instructionsField.value = quill.root.innerHTML;
-
-            console.log("Übertragener Quill-Inhalt:", instructionsField.value);
-
-            form.submit();
+            // Entferne das Foto visuell
+            if (photoContainer) {
+                photoContainer.style.display = 'none';
+            }
         });
-    } else {
-        console.error("Edit-Rezept-Formular wurde nicht gefunden!");
-    }
-});
-
+    });
 
     let ingredientCount = {{ ingredients|length }};
     $('#add-ingredient-btn').click(function() {

@@ -1,3 +1,13 @@
+# Inhalte ignorieren, aber Ordner behalten
+data/*
+!data/.gitkeep
+
+uploads/*
+!uploads/.gitkeep
+
+
+flask_session/*
+!flask_session/.gitkeep
 __pycache__
 uploads/
 database.db

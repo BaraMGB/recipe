@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    image: python:3.10-slim
+    container_name: rezepte_app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    volumes:
+      - ./app:/app                   # Mountet den `app`-Ordner ins Container-Verzeichnis `/app`
+      - ./data:/data                 # Mountet den `data`-Ordner für die SQLite-Datenbank
+      - ./requirements.txt:/requirements.txt  # Mountet die requirements-Datei ins Root-Verzeichnis
+      - ./.env:/app/.env
+      - ./uploads:/app/uploads
+      - /etc/letsencrypt/live/of7ulkzdixbmmadt.myfritz.net/fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
+      - /etc/letsencrypt/live/of7ulkzdixbmmadt.myfritz.net/privkey.pem:/etc/ssl/private/privkey.pem:ro
+    working_dir: /app                # Setzt das Arbeitsverzeichnis auf `/app`
+    command: >
+      sh -c "
+      apt-get update && apt-get install -y sqlite3 &&
+      pip install --no-cache-dir -r /requirements.txt &&
+      [ -f /data/database.db ] || sqlite3 /data/database.db < /app/setup.sql &&
+      export FLASK_ENV=production &&
+      export FLASK_APP=app:app &&
+      python app.py
+      "

@@ -22,8 +22,6 @@ app.secret_key = os.urandom(24)
 load_dotenv()
 
 # Beispiel: Passwort aus .env
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "default_password")
-print("ADMIN_PASSWORD:", os.getenv("ADMIN_PASSWORD"))
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -37,7 +35,7 @@ class User(UserMixin):
         self.role = role
 
 users = {
-    "Admin": User(id=1, username="Admin", password=ADMIN_PASSWORD, role="Admin"),
+    "Admin": User(id=1, username="Admin", password=os.getenv("ADMIN_PASSWORD", "default_admin_password"), role="Admin"),
     "Rudi": User(id=2, username="Rudi", password=os.getenv("RUDI_PASSWORD", "default_rudi_password"), role="Editor"),
     "Franzi": User(id=3, username="Franzi", password=os.getenv("FRANZI_PASSWORD", "default_franzi_password"), role="Viewer"),
     "Anton": User(id=4, username="Anton", password=os.getenv("ANTON_PASSWORD", "default_anton_password"), role="Viewer"),
@@ -152,15 +150,17 @@ def new_recipe():
         name = request.form.get('name')
         menu_description = request.form.get('menu_description')
         category = request.form.get('category')
-        preparation_time = request.form.get('preparation_time')
-        cooking_time = request.form.get('cooking_time')
         allergens = request.form.get('allergens')
+        approximate_cost = request.form.get('approximate_cost')
         instructions = request.form.get('instructions')
         notes = request.form.get('notes')
 
         conn = get_db_connection()
-        cursor = conn.execute('INSERT INTO recipes (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes) VALUES (?,?,?,?,?,?,?,?)',
-                     (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes))
+        user = current_user.username  # Benutzername des aktuell angemeldeten Benutzers
+        cursor = conn.execute(
+            'INSERT INTO recipes (name, menu_description, category, approximate_cost, allergens, instructions, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            (name, menu_description, category, approximate_cost, allergens, instructions, notes, user)
+        )
         recipe_id = cursor.lastrowid
 
         ingredient_names = [key for key in request.form.keys() if key.startswith('ingredient_name_')]
@@ -199,8 +199,7 @@ def edit_recipe(recipe_id):
         name = request.form.get('name')
         menu_description = request.form.get('menu_description')
         category = request.form.get('category')
-        preparation_time = request.form.get('preparation_time')
-        cooking_time = request.form.get('cooking_time')
+        approximate_cost = request.form.get('approximate_cost')
         allergens = request.form.get('allergens')
         instructions = request.form.get('instructions')
         notes = request.form.get('notes')
@@ -220,9 +219,11 @@ def edit_recipe(recipe_id):
                     })
 
         with get_db_connection() as conn:
-            conn.execute('UPDATE recipes SET name = ?, menu_description = ?,  category = ?, preparation_time = ?, cooking_time = ?, allergens = ?, instructions = ?, notes = ? WHERE id = ?',
-                         (name, menu_description, category, preparation_time, cooking_time, allergens, instructions, notes, recipe_id))
-
+            user = current_user.username  # Benutzername des aktuell angemeldeten Benutzers
+            conn.execute(
+                'UPDATE recipes SET name=?, menu_description=?, category=?, approximate_cost=?, allergens=?, instructions=?, notes=?, edited_by=?, edited_time=CURRENT_TIMESTAMP WHERE id=?',
+                (name, menu_description, category, approximate_cost, allergens, instructions, notes, user, recipe_id)
+            )
             conn.execute('DELETE FROM ingredients WHERE recipe_id = ?', (recipe_id,))
             for ingredient in ingredients_data:
                 conn.execute('INSERT INTO ingredients (recipe_id, quantity, unit, ingredient_name) VALUES (?,?,?,?)',
@@ -295,6 +296,9 @@ def delete_photo(photo_id):
             conn.commit()
     return redirect(request.referrer)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, ssl_context=(
+        "/etc/ssl/certs/fullchain.pem",
+        "/etc/ssl/private/privkey.pem"
+    ))
 

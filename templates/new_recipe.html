@@ -27,17 +27,17 @@
         <input type="text" name="menu_description" id="menu_description" class="form-control">
     </div>
     <div class="mb-3">
-        <label for="preparation_time" class="form-label">Vorbereitungszeit (Min.)</label>
-        <input type="number" name="preparation_time" id="preparation_time" class="form-control">
-    </div>
-    <div class="mb-3">
-        <label for="cooking_time" class="form-label">Koch-/Backzeit (Min.)</label>
-        <input type="number" name="cooking_time" id="cooking_time" class="form-control">
-    </div>
-    <div class="mb-3">
         <label for="allergens" class="form-label">Allergene</label>
         <input type="text" name="allergens" id="allergens" class="form-control" placeholder="z.B. Gluten, Laktose, Nüsse">
     </div>
+    <div class="mb-3">
+        <label for="approximate_cost" class="form-label">C.a. Einkaufspreis (€)</label>
+        <input type="number" name="approximate_cost" id="approximate_cost" step="0.01" class="form-control" placeholder="z.B. 12.50">
+    </div>
+    <input type="hidden" name="created_by" value="{{ recipe.created_by if recipe else current_user.username }}">
+    <input type="hidden" name="created_time" value="{{ recipe.created_time if recipe else '' }}">
+    <input type="hidden" name="edited_by" value="{{ current_user.username }}">
+    <input type="hidden" name="edited_time" value="{{ recipe.edited_time if recipe else '' }}">
     <div class="mb-3">
         <label for="instructions" class="form-label">Zubereitungsschritte</label>
         <input type="hidden" name="instructions" id="hidden-instructions">
@@ -53,10 +53,15 @@
         <!-- Erstes Feldset -->
         <div class="row g-2 ingredient-set">
             <div class="col">
-                <input type="number" step="0.01" name="quantity_1" placeholder="Menge" class="form-control">
+                <input type="number" step="0.01" name="quantity_1" placeholder="Menge" class="form-control quantity-input">
             </div>
             <div class="col">
-                <input type="text" name="unit_1" placeholder="Einheit (g, ml...)" class="form-control">
+                <select name="unit_1" class="form-control unit-dropdown">
+                    <option value="g">g</option>
+                    <option value="ml">ml</option>
+                    <option value="Stück">Stück</option>
+                    <option value="nach Geschmack">nach Geschmack</option>
+                </select>
             </div>
             <div class="col">
                 <input type="text" name="ingredient_name_1" placeholder="Zutat" class="form-control">
@@ -76,6 +81,25 @@
 document.addEventListener('DOMContentLoaded', function () {
     console.log("JavaScript läuft!");
 
+    // Event-Handler für die Dropdown-Auswahl
+    $('#ingredients-wrapper').on('blur', '.unit-dropdown', function () {
+        const unit = $(this).val();
+        const quantityInput = $(this).closest('.ingredient-set').find('.quantity-input');
+
+        if (unit === 'nach Geschmack') {
+            quantityInput.val(0);
+        }
+    });
+
+    // Event-Handler für die Mengenänderung
+    $('#ingredients-wrapper').on('blur', '.quantity-input', function () {
+        const quantity = parseFloat($(this).val());
+        const unitDropdown = $(this).closest('.ingredient-set').find('.unit-dropdown');
+
+        if (quantity === 0) {
+            unitDropdown.val('nach Geschmack');
+        }
+    });
     // Quill-Editor initialisieren
     var quill = new Quill('#editor-container', {
         theme: 'snow',
@@ -119,16 +143,20 @@ $('#add-ingredient-btn').click(function() {
     let html = `
     <div class="row g-2 ingredient-set mt-2">
         <div class="col">
-            <input type="number" step="0.01" name="quantity_${ingredientCount}" placeholder="Menge" class="form-control">
+            <input type="number" step="0.01" name="quantity_${ingredientCount}" placeholder="Menge" class="form-control quantity-input">
         </div>
         <div class="col">
-            <input type="text" name="unit_${ingredientCount}" placeholder="Einheit (g, ml...)" class="form-control">
+            <select name="unit_${ingredientCount}" class="form-control unit-dropdown">
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="Stück">Stück</option>
+                <option value="nach Geschmack">nach Geschmack</option>
+            </select>
         </div>
         <div class="col">
             <input type="text" name="ingredient_name_${ingredientCount}" placeholder="Zutat" class="form-control">
         </div>
-    </div>
-    `;
+    </div>`;
     $('#ingredients-wrapper').append(html);
     // Fokus auf das neue "Menge"-Feld setzen
     $(`input[name="quantity_${ingredientCount}"]`).focus();

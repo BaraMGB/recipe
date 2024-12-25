@@ -1,20 +1,20 @@
 /* Grundlegende Styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #a9acaf; /* Heller Grauton als Hintergrund */
-    color: #343a40; /* Dunkler Text für besseren Kontrast */
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f6f9; /* Heller Hintergrund */
+    color: #343a40; /* Dunkler Text */
     margin: 0;
     padding: 0;
 }
 
 .container {
-    max-width: 960px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
 h1, h2, h3 {
-    color: #343a40; /* Dunkelgrau für Überschriften */
+    color: #343a40; /* Dunkelgrau */
 }
 
 a {
@@ -26,22 +26,23 @@ a:hover {
     text-decoration: underline;
 }
 
-
 /* Buttons */
 .btn {
-    border-radius: 5px;
-    padding: 8px 12px;
+    border-radius: 20px;
+    padding: 10px 15px;
     font-size: 14px;
+    transition: all 0.3s ease-in-out;
 }
 
 .btn-warning {
     background-color: #ffc107;
-    color: black;
+    color: #212529;
     border: none;
 }
 
 .btn-warning:hover {
     background-color: #e0a800;
+    transform: translateY(-2px);
 }
 
 .btn-danger {
@@ -52,7 +53,9 @@ a:hover {
 
 .btn-danger:hover {
     background-color: #c82333;
+    transform: translateY(-2px);
 }
+
 /* Formulare */
 .form-label {
     display: block;
@@ -62,92 +65,73 @@ a:hover {
 
 .form-control {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     border: 1px solid #ced4da;
-    border-radius: 5px;
+    border-radius: 8px;
     margin-bottom: 10px;
     box-sizing: border-box;
+    font-size: 14px;
 }
 
-/* Rezept-Details */
-/* Hauptcontainer für das Rezept */
+/* Rezeptdetails */
 .recipe-detail-container {
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: 1000px;
+    margin: 20px auto;
     background-color: #ffffff;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Rezepttitel */
 .recipe-title {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
     margin: 0;
+    text-align: center;
+    color: #343a40;
 }
 
-.recipe-detail .row img { /* Hier die row Klasse hinzufügen */
-    max-width: 100%; /* Maximale Breite ist jetzt relativ zur Spaltenbreite */
+.recipe-detail img {
+    max-width: 100%;
     height: auto;
+    border-radius: 10px;
     margin-bottom: 20px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
 }
-/* Flexbox für Rezept-Details */
+
+/* Flexbox für Details */
 .recipe-detail .content {
     display: flex;
+    flex-wrap: wrap;
     gap: 20px;
 }
 
-/* Media Query für kleinere Bildschirme */
+/* Responsive Design */
 @media (max-width: 768px) {
     .recipe-detail .content {
         flex-direction: column;
     }
 
     .recipe-detail img {
-        max-width: 100%; /* Bilder nehmen die volle Breite ein */
+        max-width: 100%;
     }
 }
 
-.recipe-card {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
-    padding: 15px; /* Innenabstand */
-    border-radius: 5px; /* Abgerundete Ecken */
-    margin-bottom: 20px; /* Abstand nach unten */
-    background-color: white; /* Hintergrundfarbe Weiß */
-}
-/* Galerie-Bilder gleichmäßig skalieren */
-.carousel-img {
-    height: 400px; /* Einheitliche Höhe für alle Bilder */
-    object-fit: cover; /* Bilder werden proportional zugeschnitten */
-    width: 100%; /* Breite auf Container begrenzen */
-}
-
-/* Verhindern, dass der Content springt */
-/* Galerie */
-.carousel {
-    margin-bottom: 20px;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.carousel-img {
-    height: 400px;
-    object-fit: cover;
-}
+/* Karten */
 .card {
-    border: 1px solid #0e0206;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     background-color: white;
+    transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
 }
 
 .card-title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     margin-bottom: 10px;
 }
@@ -160,22 +144,22 @@ a:hover {
 .card .btn {
     margin-right: 5px;
 }
+
 .card-img-top {
-    height: 150px; /* Höhe anpassen */
-    object-fit: cover; /* Bild proportioniert zuschneiden */
-    border-top-left-radius: 8px; /* Abrundungen wie die Karte */
-    border-top-right-radius: 8px;
-}
-/* Rezeptdetails */
-.recipe-info p {
-    margin: 5px 0;
-    font-size: 16px;
+    height: 180px;
+    object-fit: cover;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
 
 /* Tabelle für Zutaten */
 .table {
     margin-top: 15px;
     border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
 }
 
 .table th,
@@ -189,12 +173,15 @@ a:hover {
     background-color: #f8f9fa;
     font-weight: bold;
 }
+
 .input-group .form-control {
-    height: 38px; /* Einheitliche Höhe für das Suchfeld */
-}
-.input-group .btn {
-    height: 38px; /* Passt die Höhe an das Input-Feld an */
-    line-height: 1.2; /* Zentriert den Text vertikal */
+    height: 40px;
+    border-radius: 8px 0 0 8px;
 }
 
+.input-group .btn {
+    height: 40px;
+    line-height: 1.2;
+    border-radius: 0 8px 8px 0;
+}
 

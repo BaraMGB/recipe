@@ -7,9 +7,12 @@ CREATE TABLE recipes (
     name TEXT NOT NULL,
     category TEXT,
     menu_description TEXT,
-    preparation_time INTEGER,
-    cooking_time INTEGER,
     allergens TEXT,
+    approximate_cost REAL,
+    created_by TEXT,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    edited_by TEXT,
+    edited_time TIMESTAMP,
     instructions TEXT,
     notes TEXT
 );

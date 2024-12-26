@@ -10,5 +10,6 @@ flask_session/*
 !flask_session/.gitkeep
 __pycache__
 uploads/
+backups/
 database.db
 .env

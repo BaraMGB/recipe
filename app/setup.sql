@@ -33,3 +33,11 @@ CREATE TABLE photos (
     filename TEXT NOT NULL,
     FOREIGN KEY(recipe_id) REFERENCES recipes(id)
 );
+
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL
+);
+

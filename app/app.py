@@ -5,6 +5,18 @@ import secrets
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
+
+
+import bcrypt
+
+def hash_password(password):
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+def check_password(password, hashed_password):
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
+
+
+
 app = Flask(__name__)
 
 
@@ -34,14 +46,6 @@ class User(UserMixin):
         self.password = password
         self.role = role
 
-users = {
-    "Admin": User(id=1, username="Admin", password=os.getenv("ADMIN_PASSWORD", "default_admin_password"), role="Admin"),
-    "Rudi": User(id=2, username="Rudi", password=os.getenv("RUDI_PASSWORD", "default_rudi_password"), role="Editor"),
-    "Franzi": User(id=3, username="Franzi", password=os.getenv("FRANZI_PASSWORD", "default_franzi_password"), role="Viewer"),
-    "Anton": User(id=4, username="Anton", password=os.getenv("ANTON_PASSWORD", "default_anton_password"), role="Viewer"),
-    "Steffen": User(id=5, username="Steffen", password=os.getenv("STEFFEN_PASSWORD", "default_steffen_password"), role="Editor"),
-    "Service": User(id=6, username="Service", password=os.getenv("SERVICE_PASSWORD", "default_service_password"), role="Service"),
-}
 
 def has_permission(permission):
     role_permissions = {
@@ -51,22 +55,53 @@ def has_permission(permission):
     }
     return permission in role_permissions.get(current_user.role, [])
 
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        role = request.form.get('role', 'Viewer')  # Standardrolle: Viewer
+
+        conn = get_db_connection()
+        hashed_pw = hash_password(password)
+        try:
+            conn.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', (username, hashed_pw, role))
+            conn.commit()
+            conn.close()
+            flash('Registrierung erfolgreich. Sie können sich jetzt einloggen.', 'success')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
+            flash('Benutzername existiert bereits.', 'danger')
+            conn.close()
+
+    return render_template('register.html')
+
 @login_manager.user_loader
 def load_user(user_id):
-    for user in users.values():
-        if str(user.id) == user_id:
-            return user
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+    if user:
+        return User(id=user['id'], username=user['username'], password=user['password'], role=user['role'])
     return None
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        user = next((u for u in users.values() if u.username == username and u.password == password), None)
-        if user:
-            login_user(user)
+
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        conn.close()
+
+        if user and check_password(password, user['password']):
+            user_obj = User(id=user['id'], username=user['username'], password=user['password'], role=user['role'])
+            login_user(user_obj)
             return redirect(url_for('index'))
+
         flash('Ungültige Anmeldedaten', 'danger')
     return render_template('login.html')
 
@@ -297,8 +332,5 @@ def delete_photo(photo_id):
     return redirect(request.referrer)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, ssl_context=(
-        "/etc/ssl/certs/fullchain.pem",
-        "/etc/ssl/private/privkey.pem"
-    ))
+    app.run(host="0.0.0.0", port=5000)
 

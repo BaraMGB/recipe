@@ -58,6 +58,10 @@ def has_permission(permission):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if not REGISTRATION_ENABLED:
+        flash("Registrierung ist derzeit deaktiviert.", "warning")
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -126,6 +130,63 @@ def allowed_file(filename):
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+REGISTRATION_ENABLED = True  # Globale Variable für die Registrierung
+
+@app.route('/admin')
+@login_required
+def admin():
+    if current_user.role != "Admin":
+        return "Nicht erlaubt", 403
+
+    conn = get_db_connection()
+    users = conn.execute('SELECT * FROM users').fetchall()
+    conn.close()
+
+    return render_template('admin.html', users=users, registration_enabled=REGISTRATION_ENABLED)
+
+@app.route('/edit_user_role/<int:user_id>', methods=['POST'])
+@login_required
+def edit_user_role(user_id):
+    if current_user.role != "Admin":
+        return "Nicht erlaubt", 403
+
+    new_role = request.form.get('role')
+
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET role = ? WHERE id = ?', (new_role, user_id))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('admin'))
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.role != "Admin":
+        return "Nicht erlaubt", 403
+
+    # Verhindere, dass der Admin sich selbst löscht
+    if current_user.id == user_id:
+        flash("Du kannst dich nicht selbst löschen!", "danger")
+        return redirect(url_for('admin'))
+
+    conn = get_db_connection()
+    conn.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('admin'))
+
+@app.route('/toggle_registration', methods=['POST'])
+@login_required
+def toggle_registration():
+    if current_user.role != "Admin":
+        return "Nicht erlaubt", 403
+
+    global REGISTRATION_ENABLED
+    REGISTRATION_ENABLED = not REGISTRATION_ENABLED
+
+    return redirect(url_for('admin'))
 
 @app.route('/')
 @login_required

@@ -24,6 +24,9 @@
             </div>
             <div class="d-flex align-items-center">
                 {% if current_user.is_authenticated %}
+                    {% if current_user.role == "Admin" %}
+                        <a href="{{ url_for('admin') }}" class="btn btn-warning btn-sm me-2">Admin</a>
+                    {% endif %}
                     <span class="me-3">Angemeldet als: <strong>{{ current_user.username }}</strong></span>
                     <form action="{{ url_for('logout') }}" method="post" class="d-inline">
                         <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>

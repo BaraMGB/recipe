@@ -65,18 +65,28 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        role = request.form.get('role', 'Viewer')  # Standardrolle: Viewer
 
         conn = get_db_connection()
+
+        # Überprüfe, ob bereits Benutzer existieren
+        existing_users = conn.execute('SELECT COUNT(*) FROM users').fetchone()[0]
+
+        if existing_users == 0:
+            # Erster Benutzer wird als Admin registriert
+            role = "Admin"
+        else:
+            # Standardrolle für neue Benutzer
+            role = "Service"
+
         hashed_pw = hash_password(password)
         try:
             conn.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', (username, hashed_pw, role))
             conn.commit()
-            conn.close()
             flash('Registrierung erfolgreich. Sie können sich jetzt einloggen.', 'success')
             return redirect(url_for('login'))
         except sqlite3.IntegrityError:
             flash('Benutzername existiert bereits.', 'danger')
+        finally:
             conn.close()
 
     return render_template('register.html')
@@ -149,6 +159,11 @@ def admin():
 def edit_user_role(user_id):
     if current_user.role != "Admin":
         return "Nicht erlaubt", 403
+
+    # Verhindere, dass der Admin seine eigene Rolle ändert
+    if current_user.id == user_id:
+        flash("Du kannst deine eigene Rolle nicht ändern!", "danger")
+        return redirect(url_for('admin'))
 
     new_role = request.form.get('role')
 

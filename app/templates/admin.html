@@ -21,13 +21,15 @@
             <td>{{ user.role }}</td>
             <td>
                 <form action="{{ url_for('edit_user_role', user_id=user.id) }}" method="post" class="d-inline">
-                    <select name="role" class="form-select form-select-sm">
+                    <select name="role" class="form-select form-select-sm" {% if user.id == current_user.id %}disabled{% endif %}>
                         <option value="Admin" {% if user.role == 'Admin' %}selected{% endif %}>Admin</option>
                         <option value="Editor" {% if user.role == 'Editor' %}selected{% endif %}>Editor</option>
                         <option value="Viewer" {% if user.role == 'Viewer' %}selected{% endif %}>Viewer</option>
                         <option value="Service" {% if user.role == 'Service' %}selected{% endif %}>Service</option>
                     </select>
+                    {% if user.id != current_user.id %}
                     <button type="submit" class="btn btn-warning btn-sm">Ändern</button>
+                    {% endif %}
                 </form>
                 {% if current_user.id != user.id %}
                 <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" class="d-inline">
@@ -39,7 +41,6 @@
         {% endfor %}
     </tbody>
 </table>
-
 <h2>Registrierung</h2>
 
 <form action="{{ url_for('toggle_registration') }}" method="post">

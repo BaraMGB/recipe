@@ -47,13 +47,19 @@
             </tr>
         </thead>
         <tbody>
-        {% for ingr in ingredients %}
+            {% for ingr in ingredients %}
             <tr>
-                <td class="quantity-cell">{{ ingr.quantity }}</td>
+                <td>{{ ingr.quantity }}</td>
                 <td>{{ ingr.unit }}</td>
-                <td>{{ ingr.ingredient_name }}</td>
+                <td>
+                    {% if ingr.linked_recipe_id %}
+                    <a href="{{ url_for('show_recipe', recipe_id=ingr.linked_recipe_id) }}">{{ ingr.name }}</a>
+                    {% else %}
+                    {{ ingr.name }}
+                    {% endif %}
+                </td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
 

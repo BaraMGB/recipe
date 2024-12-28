@@ -243,15 +243,25 @@ def show_recipe(recipe_id):
         return "Rezept nicht gefunden", 404
 
     ingredients = conn.execute('SELECT * FROM ingredients WHERE recipe_id = ?', (recipe_id,)).fetchall()
+
+    # Prüfen, ob Zutaten einem Rezeptnamen entsprechen
+    linked_ingredients = []
+    for ingredient in ingredients:
+        linked_recipe = conn.execute('SELECT id FROM recipes WHERE name = ?', (ingredient['ingredient_name'],)).fetchone()
+        linked_ingredients.append({
+            'name': ingredient['ingredient_name'],
+            'quantity': ingredient['quantity'],
+            'unit': ingredient['unit'],
+            'linked_recipe_id': linked_recipe['id'] if linked_recipe else None
+        })
+
     photos = conn.execute('SELECT * FROM photos WHERE recipe_id = ?', (recipe_id,)).fetchall()
     conn.close()
-
     # Überprüfe die Rolle des Benutzers
     if current_user.role == "Service":
         return render_template('recipe_detail_service.html', recipe=recipe, ingredients=ingredients, photos=photos)
     else:
-        return render_template('recipe_detail.html', recipe=recipe, ingredients=ingredients, photos=photos)
-
+        return render_template('recipe_detail.html', recipe=recipe, ingredients=linked_ingredients, photos=photos)
 @app.route('/new_recipe', methods=['GET', 'POST'])
 @login_required
 def new_recipe():

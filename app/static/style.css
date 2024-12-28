@@ -1,7 +1,7 @@
 /* Grundlegende Styles */
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #f4f6f9; /* Heller Hintergrund */
+    background-color: #646669; /* Heller Hintergrund */
     color: #343a40; /* Dunkler Text */
     margin: 0;
     padding: 0;
@@ -115,7 +115,62 @@ a:hover {
     .recipe-detail img {
         max-width: 100%;
     }
+    #photoCarousel {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+
+    #photoCarousel img {
+        max-width: 100%;
+        height: auto;
+    }
 }
+
+@media (max-width: 576px) {
+    #photoCarousel {
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+        margin-bottom: 20px;
+    }
+
+    #photoCarousel img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+}
+
+/* Flexbox für Layout */
+@media (min-width: 768px) {
+    .recipe-detail-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .recipe-content {
+        display: flex;
+        gap: 20px;
+        justify-content: space-between;
+    }
+
+    .recipe-info {
+        flex: 0 0 60%;
+    }
+
+    #photoCarousel {
+        flex: 0 0 35%;
+        margin-bottom: 20px;
+    }
+
+    #photoCarousel img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+    }
+}
+
 
 /* Karten */
 .card {
@@ -151,7 +206,21 @@ a:hover {
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
 }
+.recipe-card-link {
+    text-decoration: none; /* Entfernt die Unterstreichung des Links */
+    color: inherit; /* Sorgt dafür, dass die Textfarbe vom Elternelement geerbt wird */
+    display: block; /* Der Link erstreckt sich über die gesamte Breite der Karte */
+}
 
+.recipe-card-link:hover {
+    text-decoration: none; /* Verhindert Unterstreichung beim Hover */
+    color: inherit;
+}
+
+.recipe-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Verstärkt den Schatten beim Hover */
+    cursor: pointer; /* Ändert den Cursor zu einer Hand */
+}
 /* Tabelle für Zutaten */
 .table {
     margin-top: 15px;

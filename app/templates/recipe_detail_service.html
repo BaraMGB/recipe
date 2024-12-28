@@ -6,46 +6,46 @@
         <h1 class="recipe-title">{{ recipe.name }}</h1>
     </div>
 
-    <!-- Galerie -->
-    <div id="photoCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            {% for photo in photos %}
-            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
-                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" class="d-block w-100 carousel-img" alt="{{ recipe.name }}">
-            </div>
-            {% endfor %}
+    <div class="recipe-content">
+        <div class="recipe-info">
+            <p><strong>Kategorie:</strong> {{ recipe.category }}</p>
+            <p><strong>Speisekarten Beschreibung:</strong> {{ recipe.menu_description if recipe.menu_description else '-' }}</p>
+            <p><strong>Preis:</strong> {{ recipe.selling_price }} €</p>
+            <p><strong>Allergene:</strong> {{ recipe.allergens if recipe.allergens else 'Keine Angabe' }}</p>
+            <p><strong>Anmerkungen:</strong> {{ recipe.notes }}</p>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Vorherige</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Nächste</span>
-        </button>
-    </div>
-
-    <!-- Rezeptdetails -->
-    <div class="recipe-info">
-        <p><strong>Kategorie:</strong> {{ recipe.category }}</p>
-        <p><strong>Speisekarten Beschreibung:</strong> {{ recipe.menu_description if recipe.menu_description else '-' }}</p>
-        <p><strong>Allergene:</strong> {{ recipe.allergens if recipe.allergens else 'Keine Angabe' }}</p>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Zutaten</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for ingr in ingredients %}
-                <tr>
-                    <td>{{ ingr.ingredient_name }}</td>
-                </tr>
+        <div id="photoCarousel" class="carousel slide">
+            <div class="carousel-inner">
+                {% for photo in photos %}
+                <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                    <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" class="d-block w-100 carousel-img" alt="{{ recipe.name }}">
+                </div>
                 {% endfor %}
-            </tbody>
-        </table>
-        <p><strong>Anmerkungen:</strong> {{ recipe.notes }}</p>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Vorherige</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Nächste</span>
+            </button>
+        </div>
     </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Zutaten</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ingr in ingredients %}
+            <tr>
+                <td>{{ ingr.ingredient_name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 {% endblock %}

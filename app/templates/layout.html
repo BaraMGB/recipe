@@ -17,11 +17,6 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
         <div class="container-fluid">
             <a href="{{ url_for('index') }}" class="navbar-brand">Rezeptdatenbank Amsterdam</a>
-            <div>
-                {% if current_user.role in ["Admin", "Editor"] %}
-                <a href="{{ url_for('new_recipe') }}" class="btn btn-primary me-2">Neues Rezept</a>
-                {% endif %}
-            </div>
             <div class="d-flex align-items-center">
                 {% if current_user.is_authenticated %}
                     {% if current_user.role == "Admin" %}

@@ -9,6 +9,7 @@ CREATE TABLE recipes (
     menu_description TEXT,
     allergens TEXT,
     approximate_cost REAL,
+    selling_price REAL,
     created_by TEXT,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     edited_by TEXT,

@@ -263,14 +263,15 @@ def new_recipe():
         category = request.form.get('category')
         allergens = request.form.get('allergens')
         approximate_cost = request.form.get('approximate_cost')
+        selling_price = request.form.get('selling_price')
         instructions = request.form.get('instructions')
         notes = request.form.get('notes')
 
         conn = get_db_connection()
         user = current_user.username  # Benutzername des aktuell angemeldeten Benutzers
         cursor = conn.execute(
-            'INSERT INTO recipes (name, menu_description, category, approximate_cost, allergens, instructions, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            (name, menu_description, category, approximate_cost, allergens, instructions, notes, user)
+            'INSERT INTO recipes (name, menu_description, category, approximate_cost, selling_price, allergens, instructions, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (name, menu_description, category, approximate_cost, selling_price, allergens, instructions, notes, user)
         )
         recipe_id = cursor.lastrowid
 
@@ -311,6 +312,7 @@ def edit_recipe(recipe_id):
         menu_description = request.form.get('menu_description')
         category = request.form.get('category')
         approximate_cost = request.form.get('approximate_cost')
+        selling_price = request.form.get('selling_price')
         allergens = request.form.get('allergens')
         instructions = request.form.get('instructions')
         notes = request.form.get('notes')
@@ -332,8 +334,8 @@ def edit_recipe(recipe_id):
         with get_db_connection() as conn:
             user = current_user.username  # Benutzername des aktuell angemeldeten Benutzers
             conn.execute(
-                'UPDATE recipes SET name=?, menu_description=?, category=?, approximate_cost=?, allergens=?, instructions=?, notes=?, edited_by=?, edited_time=CURRENT_TIMESTAMP WHERE id=?',
-                (name, menu_description, category, approximate_cost, allergens, instructions, notes, user, recipe_id)
+                'UPDATE recipes SET name=?, menu_description=?, category=?, approximate_cost=?, selling_price=?, allergens=?, instructions=?, notes=?, edited_by=?, edited_time=CURRENT_TIMESTAMP WHERE id=?',
+                (name, menu_description, category, approximate_cost, selling_price, allergens, instructions, notes, user, recipe_id)
             )
             conn.execute('DELETE FROM ingredients WHERE recipe_id = ?', (recipe_id,))
             for ingredient in ingredients_data:
@@ -407,6 +409,11 @@ def delete_photo(photo_id):
             conn.commit()
     return redirect(request.referrer)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+# if __name__ == "__main__":
+#     app.run(host="0.0.0.0", port=5000)
 
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, ssl_context=(
+        "/etc/ssl/certs/fullchain.pem",
+        "/etc/ssl/private/privkey.pem"
+    ))

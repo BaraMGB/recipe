@@ -14,7 +14,7 @@
                 type="button" 
                 id="clear-search" 
                 class="btn btn-outline-secondary" 
-                style="display: none;">&times;</button>
+                style="display: none;">×</button>
             <button 
                 type="submit" 
                 class="btn btn-primary">Suchen</button>
@@ -22,21 +22,28 @@
     </form>
 </div>
 
+<div class="mb-4">
+    {% if current_user.role in ["Admin", "Editor"] %}
+    <a href="{{ url_for('new_recipe') }}" class="btn btn-primary me-2">Neues Rezept</a>
+    {% endif %}
+</div>
+
 {% if recipes %}
 <div class="row">
     {% for recipe in recipes %}
     <div class="col-md-4">
-        <div class="card mb-4">
-            {% set first_photo = photos.get(recipe.id, [None])[0] %}
-            {% if first_photo %}
-            <img src="{{ url_for('uploaded_file', filename=first_photo.filename) }}" class="card-img-top" alt="{{ recipe.name }}">
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title">{{ recipe.name }}</h5>
-                <p class="card-text">{{ recipe.category }}</p>
-                <a href="{{ url_for('show_recipe', recipe_id=recipe.id) }}" class="btn btn-info btn-sm">Ansehen</a>
+        <a href="{{ url_for('show_recipe', recipe_id=recipe.id) }}" class="recipe-card-link">
+            <div class="card mb-4">
+                {% set first_photo = photos.get(recipe.id, [None])[0] %}
+                {% if first_photo %}
+                <img src="{{ url_for('uploaded_file', filename=first_photo.filename) }}" class="card-img-top" alt="{{ recipe.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ recipe.name }}</h5>
+                    <p class="card-text">{{ recipe.category }}</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     {% endfor %}
 </div>
@@ -45,4 +52,3 @@
 {% endif %}
 
 {% endblock %}
-

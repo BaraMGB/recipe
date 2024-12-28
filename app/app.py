@@ -214,6 +214,11 @@ def index():
     photos_query = 'SELECT recipe_id, filename FROM photos'
     params = []
 
+    # Filter hinzufügen: Service-Benutzer sehen keine "intern"-Rezepte
+    if current_user.role == "Service":
+        base_query += ' WHERE category != ?'
+        params.append('intern')
+
     # Filter hinzufügen, falls Suchbegriff vorhanden
     if search_query:
         base_query += ' WHERE name LIKE ? OR category LIKE ?'

@@ -136,23 +136,41 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def get_categories():
+    conn = get_db_connection()
+    categories_string = conn.execute('SELECT value FROM settings WHERE key = ?', ('categories',)).fetchone()
+    conn.close()
+    if categories_string:
+        return [cat.strip() for cat in categories_string['value'].split(',')]
+    return []
+
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 REGISTRATION_ENABLED = True  # Globale Variable für die Registrierung
-
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin():
     if current_user.role != "Admin":
         return "Nicht erlaubt", 403
 
     conn = get_db_connection()
+
+    if request.method == 'POST':
+        # Kategorien aktualisieren
+        if 'categories' in request.form:
+            categories_string = request.form.get('categories')
+            conn.execute('UPDATE settings SET value = ? WHERE key = ?', (categories_string, 'categories'))
+            conn.commit()
+            flash('Kategorien wurden aktualisiert.', 'success')
+
+    # Benutzer und Kategorien laden
     users = conn.execute('SELECT * FROM users').fetchall()
+    categories_string = conn.execute('SELECT value FROM settings WHERE key = ?', ('categories',)).fetchone()
     conn.close()
 
-    return render_template('admin.html', users=users, registration_enabled=REGISTRATION_ENABLED)
+    return render_template('admin.html', users=users, categories_string=categories_string['value'] if categories_string else '')
 
 @app.route('/edit_user_role/<int:user_id>', methods=['POST'])
 @login_required
@@ -317,7 +335,8 @@ def new_recipe():
         conn.close()
         return redirect(url_for('show_recipe', recipe_id=recipe_id))
 
-    return render_template('new_recipe.html')
+    categories = get_categories()
+    return render_template('new_recipe.html', categories=categories)
 
 @app.route('/edit_recipe/<int:recipe_id>', methods=['GET', 'POST'])
 def edit_recipe(recipe_id):
@@ -394,7 +413,8 @@ def edit_recipe(recipe_id):
     if recipe is None:
         return "Rezept nicht gefunden", 404
 
-    return render_template('edit_recipe.html', recipe=recipe, ingredients=ingredients, photos=photos)
+    categories = get_categories()
+    return render_template('edit_recipe.html', categories=categories, recipe=recipe, ingredients=ingredients, photos=photos)
 
 @app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
 def delete_recipe(recipe_id):
@@ -429,7 +449,7 @@ def delete_photo(photo_id):
 @app.route('/menu')
 def menu():
     conn = get_db_connection()
-
+    categories = get_categories()
     # Rezepte mit ihrem ersten Foto abrufen, sortiert nach Kategorie und Preis
     recipes = conn.execute('''
         SELECT r.name, r.category, r.menu_description, CAST(r.selling_price AS REAL) AS selling_price, r.id,
@@ -441,12 +461,15 @@ def menu():
     conn.close()
 
     # Kategorien gruppieren
-    categorized_recipes = {}
+    categorized_recipes = {category: [] for category in categories}
     for recipe in recipes:
         category = recipe['category']
-        if category not in categorized_recipes:
-            categorized_recipes[category] = []
-        categorized_recipes[category].append(recipe)
+        if category in categorized_recipes:
+            categorized_recipes[category].append(recipe)
+
+    # Entfernen von Kategorien ohne Rezepte
+    categorized_recipes = {k: v for k, v in categorized_recipes.items() if v}
+
 
     return render_template('menu.html', categorized_recipes=categorized_recipes)
 

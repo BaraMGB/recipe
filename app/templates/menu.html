@@ -44,7 +44,6 @@
             <tbody>
                 {% for recipe in recipes %}
                 <tr>
-                    <!-- Foto -->
                     <td style="width: 15%;">
                         {% if recipe.photo %}
                         <img src="{{ url_for('uploaded_file', filename=recipe.photo) }}" alt="{{ recipe.name }}" style="max-width: 100%; border-radius: 8px;">
@@ -52,14 +51,10 @@
                         <img src="{{ url_for('static', filename='default.png') }}" alt="Kein Foto verfügbar" style="max-width: 100%; border-radius: 8px;">
                         {% endif %}
                     </td>
-                    
-                    <!-- Name und Beschreibung -->
                     <td style="width: 65%;">
                         <strong>{{ recipe.name }}</strong><br>
                         <span style="font-style: italic;">{{ recipe.menu_description }}</span>
                     </td>
-                    
-                    <!-- Preis -->
                     <td style="width: 20%; text-align: right;">
                         <span>{{ "%.2f" % recipe.selling_price }} €</span>
                     </td>
@@ -70,6 +65,7 @@
     </div>
     {% endfor %}
 </div>
+
 </body>
 </html>
 

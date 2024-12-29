@@ -21,7 +21,13 @@
         </div>
         <div class="mb-3">
             <label for="category" class="form-label">Kategorie</label>
-            <input type="text" name="category" id="category" class="form-control">
+            <select name="category" id="category" class="form-control" required>
+                {% for category in categories %}
+                <option value="{{ category }}" {% if recipe and recipe.category == category %}selected{% endif %}>
+                    {{ category }}
+                </option>
+                {% endfor %}
+            </select>
         </div>
         <div class="mb-3">
             <label for="in_menu" class="form-label">In der Speisekarte</label>

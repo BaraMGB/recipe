@@ -43,3 +43,11 @@ CREATE TABLE users (
     role TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
+
+-- Speichern der Kategorien als Komma-getrennter String
+INSERT INTO settings (key, value) VALUES ('categories', 'Vorspeisen,Suppen,Pasta,Hauptgerichte,Dessert,intern');
+

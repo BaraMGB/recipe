@@ -43,8 +43,15 @@
             {% endfor %}
         </tbody>
     </table>
+    <h2>Kategorienverwaltung</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="categories" class="form-label">Kategorien (durch Komma getrennt)</label>
+            <textarea name="categories" id="categories" class="form-control" rows="3">{{ categories_string }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Kategorien speichern</button>
+    </form>
     <h2>Registrierung</h2>
-
     <form action="{{ url_for('toggle_registration') }}" method="post">
         <button type="submit" class="btn btn-primary">
             {% if registration_enabled %}

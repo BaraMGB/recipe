@@ -50,7 +50,7 @@
         <tbody>
             {% for ingr in ingredients %}
             <tr>
-                <td>{{ ingr.quantity }}</td>
+                <td class="quantity-cell" data-base="{{ ingr.quantity }}">{{ ingr.quantity }}</td>
                 <td>{{ ingr.unit }}</td>
                 <td>
                     {% if ingr.linked_recipe_id %}

@@ -6,6 +6,7 @@ CREATE TABLE recipes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     category TEXT,
+    in_menu BOOLEAN DEFAULT 0,
     menu_description TEXT,
     allergens TEXT,
     approximate_cost REAL,

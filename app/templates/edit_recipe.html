@@ -26,6 +26,10 @@
             <input type="text" name="category" id="category" class="form-control" value="{{ recipe.category }}">
         </div>
         <div class="mb-3">
+            <label for="in_menu" class="form-label">In der Speisekarte</label>
+            <input type="checkbox" name="in_menu" id="in_menu" class="form-check-input" {% if recipe.in_menu %}checked{% endif %}>
+        </div>
+        <div class="mb-3">
             <label for="menu_description" class="form-label">Speisekarten Beschreibung</label>
             <input type="text" name="menu_description" id="menu_description" class="form-control" value="{{ recipe.menu_description }}">
         </div>

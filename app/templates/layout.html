@@ -18,6 +18,8 @@
         <div class="container-fluid">
             <a href="{{ url_for('index') }}" class="navbar-brand">Rezeptdatenbank Amsterdam</a>
             <div class="d-flex align-items-center">
+            <!-- Button für Speisekarte -->
+            <a href="{{ url_for('menu') }}" class="btn btn-secondary me-3">Speisekarte</a>
                 {% if current_user.is_authenticated %}
                     {% if current_user.role == "Admin" %}
                         <a href="{{ url_for('admin') }}" class="btn btn-warning btn-sm me-2">Admin</a>

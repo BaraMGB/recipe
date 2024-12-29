@@ -8,6 +8,7 @@
     <div class="recipe-content">
         <div class="recipe-info">
             <p><strong>Kategorie:</strong> {{ recipe.category }}</p>
+            <p><strong>In der Speisekarte:</strong> {% if recipe.in_menu %}Ja{% else %}Nein{% endif %}</p>
             <p><strong>Speisekarten Beschreibung:</strong> {{ recipe.menu_description if recipe.menu_description else '-' }}</p>
             <p><strong>Allergene:</strong> {{ recipe.allergens if recipe.allergens else 'Keine Angabe' }}</p>
             <p><strong>c.a. Einkaufspreis:</strong> {{ recipe.approximate_cost }} €</p>
@@ -72,15 +73,15 @@
         <p><strong>Bearbeitet von:</strong> {{ recipe.edited_by }} am {{ recipe.edited_time }}</p>
     </div>
     {% endif %}
+    {% if current_user.role in ["Admin", "Editor"] %}
     <div>
         <h2>Vorsicht!</h2>
-        {% if current_user.role in ["Admin", "Editor"] %}
         <a href="{{ url_for('edit_recipe', recipe_id=recipe.id) }}" class="btn btn-warning btn-sm me-2">Bearbeiten</a>
         <form action="{{ url_for('delete_recipe', recipe_id=recipe.id) }}" method="post" style="display: inline;">
             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Rezept wirklich löschen?');">Löschen</button>
         </form>
-        {% endif %}
     </div>
+    {% endif %}
 </div>
 
 

@@ -276,6 +276,7 @@ def new_recipe():
         name = request.form.get('name')
         menu_description = request.form.get('menu_description')
         category = request.form.get('category')
+        in_menu = request.form.get('in_menu') == 'on'  # Checkbox-Wert
         allergens = request.form.get('allergens')
         approximate_cost = request.form.get('approximate_cost')
         selling_price = request.form.get('selling_price')
@@ -285,8 +286,8 @@ def new_recipe():
         conn = get_db_connection()
         user = current_user.username  # Benutzername des aktuell angemeldeten Benutzers
         cursor = conn.execute(
-            'INSERT INTO recipes (name, menu_description, category, approximate_cost, selling_price, allergens, instructions, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            (name, menu_description, category, approximate_cost, selling_price, allergens, instructions, notes, user)
+            'INSERT INTO recipes (name, menu_description, category, in_menu, approximate_cost, selling_price, allergens, instructions, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (name, menu_description, category, in_menu, approximate_cost, selling_price, allergens, instructions, notes, user)
         )
         recipe_id = cursor.lastrowid
 
@@ -326,6 +327,7 @@ def edit_recipe(recipe_id):
         name = request.form.get('name')
         menu_description = request.form.get('menu_description')
         category = request.form.get('category')
+        in_menu = request.form.get('in_menu') == 'on'
         approximate_cost = request.form.get('approximate_cost')
         selling_price = request.form.get('selling_price')
         allergens = request.form.get('allergens')
@@ -349,8 +351,8 @@ def edit_recipe(recipe_id):
         with get_db_connection() as conn:
             user = current_user.username  # Benutzername des aktuell angemeldeten Benutzers
             conn.execute(
-                'UPDATE recipes SET name=?, menu_description=?, category=?, approximate_cost=?, selling_price=?, allergens=?, instructions=?, notes=?, edited_by=?, edited_time=CURRENT_TIMESTAMP WHERE id=?',
-                (name, menu_description, category, approximate_cost, selling_price, allergens, instructions, notes, user, recipe_id)
+                'UPDATE recipes SET name=?, menu_description=?, category=?, in_menu=?, approximate_cost=?, selling_price=?, allergens=?, instructions=?, notes=?, edited_by=?, edited_time=CURRENT_TIMESTAMP WHERE id=?',
+                (name, menu_description, category, in_menu,  approximate_cost, selling_price, allergens, instructions, notes, user, recipe_id)
             )
             conn.execute('DELETE FROM ingredients WHERE recipe_id = ?', (recipe_id,))
             for ingredient in ingredients_data:
@@ -423,6 +425,30 @@ def delete_photo(photo_id):
             conn.execute('DELETE FROM photos WHERE id = ?', (photo_id,))
             conn.commit()
     return redirect(request.referrer)
+
+@app.route('/menu')
+def menu():
+    conn = get_db_connection()
+
+    # Rezepte mit ihrem ersten Foto abrufen, sortiert nach Kategorie und Preis
+    recipes = conn.execute('''
+        SELECT r.name, r.category, r.menu_description, CAST(r.selling_price AS REAL) AS selling_price, r.id,
+            (SELECT filename FROM photos WHERE photos.recipe_id = r.id LIMIT 1) AS photo
+        FROM recipes r
+        WHERE r.in_menu = 1
+        ORDER BY r.category, r.selling_price
+    ''').fetchall()
+    conn.close()
+
+    # Kategorien gruppieren
+    categorized_recipes = {}
+    for recipe in recipes:
+        category = recipe['category']
+        if category not in categorized_recipes:
+            categorized_recipes[category] = []
+        categorized_recipes[category].append(recipe)
+
+    return render_template('menu.html', categorized_recipes=categorized_recipes)
 
 # if __name__ == "__main__":
 #     app.run(host="0.0.0.0", port=5000)

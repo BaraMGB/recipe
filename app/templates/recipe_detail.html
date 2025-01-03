@@ -11,8 +11,8 @@
             <p><strong>In der Speisekarte:</strong> {% if recipe.in_menu %}Ja{% else %}Nein{% endif %}</p>
             <p><strong>Speisekarten Beschreibung:</strong> {{ recipe.menu_description if recipe.menu_description else '-' }}</p>
             <p><strong>Allergene:</strong> {{ recipe.allergens if recipe.allergens else 'Keine Angabe' }}</p>
-            <p><strong>c.a. Einkaufspreis:</strong> {{ recipe.approximate_cost }} €</p>
-            <p><strong>Verkaufspreis:</strong> {{ recipe.selling_price }} €</p>
+            <p><strong>c.a. Einkaufspreis:</strong> {{ "%.2f" | format(recipe.approximate_cost) }} €</p>
+            <p><strong>Verkaufspreis:</strong> {{ "%.2f" | format(recipe.selling_price) }} €</p>
             <p><strong>Anmerkungen:</strong> {{ recipe.notes }}</p>
         </div>
         <div id="photoCarousel" class="carousel slide">

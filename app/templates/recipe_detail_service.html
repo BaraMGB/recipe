@@ -10,7 +10,7 @@
         <div class="recipe-info">
             <p><strong>Kategorie:</strong> {{ recipe.category }}</p>
             <p><strong>Speisekarten Beschreibung:</strong> {{ recipe.menu_description if recipe.menu_description else '-' }}</p>
-            <p><strong>Preis:</strong> {{ recipe.selling_price }} €</p>
+            <p><strong>Preis:</strong> {{ "%.2f" | format(recipe.selling_price) }} €</p>
             <p><strong>Allergene:</strong> {{ recipe.allergens if recipe.allergens else 'Keine Angabe' }}</p>
             <p><strong>Anmerkungen:</strong> {{ recipe.notes }}</p>
         </div>

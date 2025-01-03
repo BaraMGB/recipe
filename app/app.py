@@ -5,19 +5,35 @@ import secrets
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
-
-
+from datetime import timedelta
 import bcrypt
+import logging
+
+
+logging.basicConfig(
+    level=logging.INFO,  # Loglevel auf INFO setzen
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Logs an stdout senden
+    ]
+)
+
+
+app = Flask(__name__)
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Sitzungsdauer auf 30 Minuten festlegen
+app.config['SESSION_PERMANENT'] = True
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+
 
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 def check_password(password, hashed_password):
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
-
-
-
-app = Flask(__name__)
 
 
 # Konfiguration für Uploads
@@ -114,15 +130,19 @@ def login():
         if user and check_password(password, user['password']):
             user_obj = User(id=user['id'], username=user['username'], password=user['password'], role=user['role'])
             login_user(user_obj)
+            logging.info(f"User {username} logged in successfully.")
             return redirect(url_for('index'))
-
+        client_ip = request.remote_addr
+        logging.warning(f"Failed login attempt for username: {username} from IP: {client_ip}")
         flash('Ungültige Anmeldedaten', 'danger')
     return render_template('login.html')
 
 @app.route('/logout', methods=['POST'])
 @login_required
 def logout():
-    logout_user()
+    logging.info(f"User {current_user.username} logged out.")
+    session.clear()  # Sitzung löschen
+    logout_user()    # Benutzer abmelden
     return redirect(url_for('index'))
 
 DATABASE_PATH = os.path.join('/data', 'database.db')
@@ -280,6 +300,12 @@ def show_recipe(recipe_id):
 
     photos = conn.execute('SELECT * FROM photos WHERE recipe_id = ?', (recipe_id,)).fetchall()
     conn.close()
+
+    # Konvertiere das Rezept zu einem Dictionary und stelle sicher, dass selling_price und approximate_cost Floats sind
+    recipe = dict(recipe)
+    recipe['selling_price'] = float(recipe['selling_price']) if recipe['selling_price'] else 0.0
+    recipe['approximate_cost'] = float(recipe['approximate_cost']) if recipe['approximate_cost'] else 0.0
+
     # Überprüfe die Rolle des Benutzers
     if current_user.role == "Service":
         return render_template('recipe_detail_service.html', recipe=recipe, ingredients=ingredients, photos=photos)

@@ -26,6 +26,39 @@ a:hover {
     text-decoration: underline;
 }
 
+/* Navigation Bar */
+.navbar {
+    background-color: #343a40 !important; /* Dunkle Hintergrundfarbe */
+    color: white; /* Weißer Text */
+    border-radius: 12px; /* Runde Kanten */
+    border: 1px solid #f8f9fa; /* Helle Umrandung */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+}
+
+.navbar .navbar-brand, 
+.navbar .nav-link, 
+.navbar .btn {
+    color: white !important; /* Alle Links und Buttons weiß */
+}
+
+.navbar .navbar-brand:hover, 
+.navbar .nav-link:hover, 
+.navbar .btn:hover {
+    color: #ffc107 !important; /* Gelber Hover-Effekt */
+}
+
+.navbar .btn-primary {
+    background-color: #ffc107; /* Gelbe Farbe für Buttons */
+    border: none;
+    color: black; /* Schwarzer Text */
+}
+
+.navbar .btn-primary:hover {
+    background-color: #e0a800; /* Etwas dunkleres Gelb beim Hover */
+}
+
+
+
 /* Buttons */
 .btn {
     border-radius: 20px;

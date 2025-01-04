@@ -247,34 +247,32 @@ def index():
     search_query = request.args.get('search', '').strip()  # Suchbegriff aus der URL abrufen
     conn = get_db_connection()
 
-    # SQL-Basisabfrage
-    base_query = 'SELECT id, name, category FROM recipes'
-    photos_query = 'SELECT recipe_id, filename FROM photos'
-    params = []
+    # Kategorien aus der Datenbank laden
+    categories = conn.execute('SELECT value FROM settings WHERE key = ?', ('categories',)).fetchone()
+    categories_list = [cat.strip() for cat in categories['value'].split(',')] if categories else []
 
-    # Filter hinzufügen: Service-Benutzer sehen keine "intern"-Rezepte
-    if current_user.role == "Service":
-        base_query += ' WHERE category != ?'
-        params.append('intern')
-
-    # Filter hinzufügen, falls Suchbegriff vorhanden
-    if search_query:
-        base_query += ' WHERE name LIKE ? OR category LIKE ?'
-        params.extend([f'%{search_query}%', f'%{search_query}%'])
-
-    recipes = conn.execute(base_query, params).fetchall()
-    photos_result = conn.execute(photos_query).fetchall()
+    # Rezepte mit ihrem ersten Foto abrufen
+    recipes = conn.execute('''
+        SELECT r.id, r.name, r.category, r.menu_description, CAST(r.selling_price AS REAL) AS selling_price,
+               (SELECT filename FROM photos WHERE photos.recipe_id = r.id LIMIT 1) AS photo
+        FROM recipes r
+        WHERE r.name LIKE ? OR r.category LIKE ?
+    ''', (f'%{search_query}%', f'%{search_query}%')).fetchall()
     conn.close()
+
+    # Sortierung basierend auf Kategorien und Preisen
+    sorted_recipes = sorted(recipes, key=lambda r: (categories_list.index(r['category']) if r['category'] in categories_list else len(categories_list), r['selling_price']))
 
     # Fotos nach Rezept gruppieren
     photos = {}
-    for photo in photos_result:
-        if photo['recipe_id'] not in photos:
-            photos[photo['recipe_id']] = []
-        photos[photo['recipe_id']].append(photo)
+    for recipe in recipes:
+        if recipe['id'] not in photos:
+            photos[recipe['id']] = []
+        photo = recipe['photo']
+        if photo:
+            photos[recipe['id']].append({'filename': photo})
 
-    return render_template('index.html', recipes=recipes, photos=photos, search=search_query)
-
+    return render_template('index.html', recipes=sorted_recipes, photos=photos, search=search_query)
 
 @app.route('/recipe/<int:recipe_id>')
 @login_required

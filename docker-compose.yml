@@ -22,7 +22,7 @@ services:
     command: >
       sh -c "
       apt-get update && 
-      apt-get install -y --no-install-recommends gcc libfreetype6-dev libjpeg-dev zlib1g-dev sqlite3 && 
+      apt-get install -y --no-install-recommends gcc libfreetype6-dev libjpeg-dev zlib1g-dev sqlite3 libpango-1.0-0 libcairo2 libffi-dev libgdk-pixbuf2.0-0 libpangoft2-1.0-0 fonts-liberation &&
       pip install --no-cache-dir -r /requirements.txt && 
       [ -f /data/database.db ] || sqlite3 /data/database.db < /app/setup.sql && 
       export FLASK_ENV=production && 

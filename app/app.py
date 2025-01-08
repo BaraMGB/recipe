@@ -8,8 +8,12 @@ from dotenv import load_dotenv
 from datetime import timedelta
 import bcrypt
 import logging
-from xhtml2pdf import pisa
 from io import BytesIO
+from weasyprint import HTML
+
+
+
+
 logging.basicConfig(
     level=logging.INFO,  # Loglevel auf INFO setzen
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -279,7 +283,7 @@ def index():
 def generate_pdf():
     conn = get_db_connection()
     categories = get_categories()
-    
+
     # Rezepte filtern, die in der Speisekarte angezeigt werden sollen
     recipes = conn.execute('''
         SELECT r.name, r.category, r.menu_description, CAST(r.selling_price AS REAL) AS selling_price, r.id,
@@ -301,24 +305,16 @@ def generate_pdf():
     categorized_recipes = {k: v for k, v in categorized_recipes.items() if v}
 
     # HTML-Inhalt rendern
-    rendered = render_template('pdf_template.html', categorized_recipes=categorized_recipes)
+    rendered_html = render_template('pdf_template.html', categorized_recipes=categorized_recipes)
 
     # Ordner für die PDF-Dateien
     output_dir = os.path.join(os.getcwd(), "menu_card")
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Dateipfad für das PDF
-    pdf_filename = os.path.join(output_dir, "speisekarte.pdf")
-
-    # PDF erstellen und speichern
-    with open(pdf_filename, "wb") as pdf_file:
-        pdf = pisa.CreatePDF(rendered, dest=pdf_file)
-
-    if pdf.err:
-        return "PDF konnte nicht generiert werden", 500
-
-    # Zeige die Speisekarte-Seite (HTML)
+    # PDF erstellen
+    pdf_file = os.path.join(output_dir, "speisekarte.pdf")
+    HTML(string=rendered_html).write_pdf(pdf_file)
     return render_template('pdf_template.html', categorized_recipes=categorized_recipes)
 
 

@@ -25,6 +25,7 @@
 <div class="mb-4">
     {% if current_user.role in ["Admin", "Editor"] %}
     <a href="{{ url_for('new_recipe') }}" class="btn btn-primary me-2">Neues Rezept</a>
+    <a href="{{ url_for('generate_pdf') }}" class="btn btn-secondary">PDF generieren</a>
     {% endif %}
 </div>
 

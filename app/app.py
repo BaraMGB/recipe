@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, session
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, session, make_response
 import sqlite3
 import os
 import secrets
@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 from datetime import timedelta
 import bcrypt
 import logging
-
-
+from xhtml2pdf import pisa
+from io import BytesIO
 logging.basicConfig(
     level=logging.INFO,  # Loglevel auf INFO setzen
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -274,6 +274,54 @@ def index():
 
     return render_template('index.html', recipes=sorted_recipes, photos=photos, search=search_query)
 
+@app.route('/generate_pdf', methods=['GET'])
+@login_required
+def generate_pdf():
+    conn = get_db_connection()
+    categories = get_categories()
+    
+    # Rezepte filtern, die in der Speisekarte angezeigt werden sollen
+    recipes = conn.execute('''
+        SELECT r.name, r.category, r.menu_description, CAST(r.selling_price AS REAL) AS selling_price, r.id,
+            (SELECT filename FROM photos WHERE photos.recipe_id = r.id LIMIT 1) AS photo
+        FROM recipes r
+        WHERE r.in_menu = 1
+        ORDER BY r.category, r.selling_price
+    ''').fetchall()
+    conn.close()
+
+    # Kategorien gruppieren
+    categorized_recipes = {category: [] for category in categories}
+    for recipe in recipes:
+        category = recipe['category']
+        if category in categorized_recipes:
+            categorized_recipes[category].append(recipe)
+
+    # Entfernen von Kategorien ohne Rezepte
+    categorized_recipes = {k: v for k, v in categorized_recipes.items() if v}
+
+    # HTML-Inhalt rendern
+    rendered = render_template('pdf_template.html', categorized_recipes=categorized_recipes)
+
+    # Ordner für die PDF-Dateien
+    output_dir = os.path.join(os.getcwd(), "menu_card")
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Dateipfad für das PDF
+    pdf_filename = os.path.join(output_dir, "speisekarte.pdf")
+
+    # PDF erstellen und speichern
+    with open(pdf_filename, "wb") as pdf_file:
+        pdf = pisa.CreatePDF(rendered, dest=pdf_file)
+
+    if pdf.err:
+        return "PDF konnte nicht generiert werden", 500
+
+    # Zeige die Speisekarte-Seite (HTML)
+    return render_template('pdf_template.html', categorized_recipes=categorized_recipes)
+
+
 @app.route('/recipe/<int:recipe_id>')
 @login_required
 def show_recipe(recipe_id):
@@ -497,11 +545,11 @@ def menu():
 
     return render_template('menu.html', categorized_recipes=categorized_recipes)
 
-# if __name__ == "__main__":
-#     app.run(host="0.0.0.0", port=5000)
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, ssl_context=(
-        "/etc/ssl/certs/fullchain.pem",
-        "/etc/ssl/private/privkey.pem"
-    ))
+    app.run(host="0.0.0.0", port=5000)
+
+# if __name__ == "__main__":
+#     app.run(host="0.0.0.0", port=5000, ssl_context=(
+#         "/etc/ssl/certs/fullchain.pem",
+#         "/etc/ssl/private/privkey.pem"
+#     ))

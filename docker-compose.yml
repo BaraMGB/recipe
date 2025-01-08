@@ -12,6 +12,7 @@ services:
     volumes:
       - ./app:/app                   # Mountet den `app`-Ordner ins Container-Verzeichnis `/app`
       - ./data:/data                 # Mountet den `data`-Ordner für die SQLite-Datenbank
+      - ./menu_card:/app/menu_card   # Mountet den `menu_card`-Ordner für gespeicherte PDFs
       - ./requirements.txt:/requirements.txt  # Mountet die requirements-Datei ins Root-Verzeichnis
       - ./.env:/app/.env
       - ./uploads:/app/uploads
@@ -20,10 +21,12 @@ services:
     working_dir: /app                # Setzt das Arbeitsverzeichnis auf `/app`
     command: >
       sh -c "
-      apt-get update && apt-get install -y sqlite3 &&
-      pip install --no-cache-dir -r /requirements.txt &&
-      [ -f /data/database.db ] || sqlite3 /data/database.db < /app/setup.sql &&
-      export FLASK_ENV=production &&
-      export FLASK_APP=app:app &&
+      apt-get update && 
+      apt-get install -y --no-install-recommends gcc libfreetype6-dev libjpeg-dev zlib1g-dev sqlite3 && 
+      pip install --no-cache-dir -r /requirements.txt && 
+      [ -f /data/database.db ] || sqlite3 /data/database.db < /app/setup.sql && 
+      export FLASK_ENV=production && 
+      export FLASK_APP=app:app && 
       python app.py
       "
+

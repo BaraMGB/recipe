@@ -5,6 +5,8 @@ data/*
 uploads/*
 !uploads/.gitkeep
 
+menu_card/*
+!menu_card/.gitkeep
 
 flask_session/*
 !flask_session/.gitkeep
